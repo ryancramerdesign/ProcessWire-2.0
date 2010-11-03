@@ -1,0 +1,28 @@
+
+.WireTabs {
+	position: relative;
+	left: -1em; 
+}
+
+	.WireTabs li {
+		display: inline !important; 
+		padding: 0 1.25em 0 1em; 
+		background: url(images/bullet.gif) center right no-repeat; 
+	}
+		.WireTabs li:last-child {
+			background: none; 
+		}
+
+		.WireTabs li a {
+			color: #6b3d14; 
+			border: none; 
+		}
+
+		.WireTabs li a.on {
+			color: #ba5800;  
+		}
+
+		.WireTabs li a em {
+			font-style: normal;
+			border-bottom: 1px dotted #aaa; 
+		}	

@@ -1,0 +1,245 @@
+body {
+	background: #fff;
+	color: #222; 
+	font: 10px/1.7em Arial, Helvetica, sans-serif; 
+}
+.detail {
+	font-size: 0.9166em;
+	color: #999; 
+}
+
+
+#masthead {
+}
+	#topnav {
+	}
+		#topnav li {
+			list-style: none; 		
+			display: inline; 
+			padding: 0 0.75em; 
+			color: #39566f;
+			font-size: 1.3em; 
+		}
+
+			#topnav li a {
+				color: #fff; 
+				text-transform: capitalize; 
+			}
+				#topnav li a:hover,
+				#topnav li a.on {
+					color: #39566f; 
+				}
+
+			#topnav li:last-child {
+				padding-right: 0; 
+			}
+
+	#breadcrumb {
+	}
+		#breadcrumb li {
+			list-style: none; 
+			display: inline; 
+			padding: 0 2px 0 0;
+			color: #ccc; 
+			font-size: 1.2em; 
+		}
+			#breadcrumb li a {
+				color: #777; 
+				padding: 0 2px 0 0;
+				text-transform: capitalize; 
+			}
+				#breadcrumb li a:hover {
+					text-decoration: underline; 
+				}
+
+	#title {
+		font-size: 2em; 
+		color: #c36b1d;
+		/*text-transform: capitalize; */
+		font-family: Georgia; 
+	}
+
+#notices {
+}
+	#notices li {
+		/*margin-left: -7px; */
+	}
+
+	#notices .ui-state-highlight,
+	#notices .ui-state-error {
+		padding: 0.5em; 
+	}
+
+		#notices .ui-state-error pre {
+			font-size: 11px; 
+			margin: 1em 0;
+		}
+
+
+
+.content {
+	font-size: 1.2em; 
+}
+
+	.content a,
+	a.action, 
+	.content .ui-widget .actions a,
+	.content table a {
+		color: #ba5800;
+			
+	}
+		.content a:hover {
+			text-decoration: underline; 
+		}
+
+		.content a:active {
+			background: #ffffcc;
+			text-decoration: none;
+		}
+
+		.content a.label {
+			color: #6b3d14; 
+		}
+
+		.content a.on,
+		.content .PageListItemOpen > a.PageListPage  {
+			color: #000; 	
+		}
+
+		.content a.action:hover,
+		.content .actions a:hover,
+		.content .actions a.on {
+			background-color: #ba5800;
+			color: #fff; 
+			text-decoration: none; 
+		}
+
+		.content a.highlighted {
+			background-color: #fff7de;
+		}
+
+		.content a.secondary {
+			color: #c1977b;
+		}
+
+		.content a.disabled {
+		        text-decoration: line-through;
+        		color: #9e0000;
+		}
+
+
+	.content p {
+		margin: 1em 0; 
+	}
+
+	.content h2 {
+		margin: 1em 0;
+		font-size: 1.4em; 
+		line-height: 1.2em; 
+		rcolor: #777; 
+		font-family: Georgia; 
+	}
+		.container > h2 {
+			margin-top: 0;
+		}
+
+	.content h3 {
+		margin: 1em 0;
+		font-size: 1.5em; 
+	}
+
+	.content ul, 
+	.content ol {
+		margin: 1em 0; 
+	}
+
+		.content li {
+			margin: 1em 0; 
+			display: block;
+			list-style: disc; 
+		}
+
+		.content ol li {
+			display: list-item; 
+			list-style-type: decimal;
+			margin-left: 1em; 
+		}
+
+		.content ul.actions {
+		}
+			.content ul.actions li,
+			li.action {
+				display: inline; 
+				border-left: 1px solid #bbb; 
+				padding: 0 1px; 
+				text-transform: lowercase; 
+			}
+
+			.content ul.actions li a,
+			li.action a {
+				padding: 1px 5px 1px 3px; 
+				border-bottom: none; 
+			}
+
+			.content ul.actions li a:hover,
+			li.action a:hover,
+			.content ul.actions li a.on {
+			}
+
+		.content dl {
+			margin: 1em 0;
+			border-bottom: 1px dotted #ccc; 
+		}
+			.content dt {
+				display: block;
+				font-weight: bold; 
+				border-top: 1px dotted #ccc; 
+				padding-top: 0.75em; 
+			}
+			.content dd {
+				padding-bottom: 0.75em; 
+			}
+
+	.content .description {
+		font-family: Georgia; 
+		font-style: italic; 
+		color: #777; 
+	}
+	.content .notes {
+		font-size: 0.9166666em;
+		color: #777; 
+		background: #feffd9; 
+	}
+
+	.content .error {
+		text-transform: uppercase;
+		font-weight: bold; 
+		font-size: 0.9166666em;	
+	}
+
+	.HasDraft {
+		background: #ffffcc; 
+	}
+
+
+.ui-icon {
+	float: left; 
+	margin-right: 2px; 
+}
+
+#debug {
+}
+	#debug p {
+		margin: 1em 0; 
+	}
+	#debug ol {
+		margin: 1em 0; 
+	}
+	#debug h4 {
+		font-weight: bold; 
+	}
+
+#footer {
+	font-size: 1.1em; 
+	color: #999; 
+}

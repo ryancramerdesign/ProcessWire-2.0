@@ -1,0 +1,60 @@
+<?php
+
+/**
+ * ProcessWire Integer Fieldtype
+ *
+ * Field that stores an integer value. 
+ *
+ * For documentation about the fields used in this class, please see:  
+ * /wire/core/Fieldtype.php
+ * 
+ * ProcessWire 2.x 
+ * Copyright (C) 2010 by Ryan Cramer 
+ * Licensed under GNU/GPL v2, see LICENSE.TXT
+ * 
+ * http://www.processwire.com
+ * http://www.ryancramer.com
+ *
+ */
+
+class FieldtypeInteger extends Fieldtype {
+
+	public static function getModuleInfo() {
+		return array(
+			'title' => 'Integer',
+			'version' => 100,
+			'summary' => 'Field that stores an integer',
+			'permanent' => true, 
+			);
+	}
+
+	public function ___getCompatibleFieldtypes(Field $field) {
+		$fieldtypes = parent::___getCompatibleFieldtypes($field); 
+		foreach($fieldtypes as $type) {
+			if(!$type instanceof FieldtypeInteger && $type != 'FieldtypeText') $fieldtypes->remove($type); 
+		}
+		return $fieldtypes; 
+	}
+
+	public function getBlankValue(Page $page, Field $field) {
+		return ''; 
+	}
+
+	public function sanitizeValue(Page $page, Field $field, $value) {
+		return strlen("$value") ? (int) $value : '';
+	}
+
+	public function getInputfield(Page $page, Field $field) {
+		$inputfield = $this->modules->get('InputfieldInteger'); 
+		$inputfield->class = $this->className();
+		return $inputfield; 
+	}
+
+	public function getDatabaseSchema(Field $field) {
+		$schema = parent::getDatabaseSchema($field); 
+		$schema['data'] = 'int NOT NULL';
+		return $schema;
+	}
+
+}
+

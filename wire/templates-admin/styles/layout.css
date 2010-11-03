@@ -1,0 +1,108 @@
+body {
+}
+
+#masthead,
+#content,
+#footer {
+	padding-right: 20px;
+	padding-left: 20px; 
+}
+
+.container {
+	position: relative; 
+	width: 85%; 
+	min-width: 800px; 
+	max-width: 1200px; 
+	margin: 0 auto; 
+}
+	body.modal .container {
+		width: 95%; 
+		min-width: 300px; 
+	}
+
+#masthead {
+ 	background: url(images/bg.gif) top left repeat-x; 
+}
+	body.modal #masthead {
+		display: none; 
+	}
+	#masthead .container {
+		height: 152px; 
+	}
+	#logo {
+		position: absolute; 
+		left: 0;
+		top: 25px; 
+		width: 159px;
+		height: 22px; 
+		text-indent: -9999px; 
+		background: url(images/logo.gif) top left no-repeat; 
+	}
+
+	#topnav {
+		position: absolute; 
+		right: 0; 
+		top: 31px; 
+	}
+
+	#breadcrumb {
+		position: absolute; 
+		left: 0;
+		top: 87px; 
+	}
+
+	#title {
+		position: absolute; 
+		left: 0;
+		top: 115px; 
+	}
+
+
+#content {
+	position: relative; 
+	background: #fff url(images/bg_content.gif) top left repeat-x; 
+	padding-top: 2em; 
+}
+	body.modal #content {
+		padding: 0; 
+		background: none; 
+	}
+	#content .container {
+		min-height: 50px; 
+	}
+
+#footer {
+	margin: 4em 0 2em 0; 
+	border-top: 1px dotted #bbb; 
+	padding-top: 1em; 
+}
+	body.modal #footer {
+		display: none; 
+	}
+	#footer #userinfo {
+		display: block; 
+		float: right; 
+	}
+
+	#debug {
+		margin-top: 2em; 
+	}
+		#debug .container {
+			width: 100%; 
+		}
+
+.align_left {
+	float: left;
+	margin: 0 1em 0.5em 0;
+}
+
+.align_right {
+	float: right;
+	margin: 0 0 0.5em 1em; 
+}
+
+.align_center {
+	display: block;
+	margin-left: auto;
+	margin-right: auto; 
+}

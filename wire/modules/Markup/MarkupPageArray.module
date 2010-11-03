@@ -1,0 +1,97 @@
+<?php
+
+
+class MarkupPageArray extends WireData implements Module {
+
+	public static function getModuleInfo() {
+		return array(
+			'title' => 'PageArray Markup', 
+			'summary' => 'Adds a render() method to all PageArray instances for basic unordered list generation of PageArrays.', 
+			'version' => 100, 
+			'permanent' => false, 
+			);
+	}
+
+	/** the following are specific to the Module interface **/
+
+	public function init() { 
+		$this->addHook("PageArray::render", $this, "renderPageArray"); 
+		$this->addHook("PageArray::renderPager", $this, "renderPager"); 
+	}	
+	public function ___install() { }
+	public function ___uninstall() { }
+
+	public function isSingular() {
+		return true; 
+	}
+
+	public function isAutoload() {
+		return true; 
+	}
+
+	/** end Module interface **/
+
+	public function renderPageArray(HookEvent $event) {
+
+		$pageArray = $event->object; 
+		$arguments = $event->arguments; 
+		$options = array();
+
+		$defaultOptions = array(
+			'listClass' => 'PageArray', 
+			'listOpen' => "\n<ul class='{listClass}'>", 
+			'listClose' => "\n</ul>", 
+			'listItem' => "\n\t<li><a href='{url}'>{title}</a></li>", 
+			'pagerTop' => false, 
+			'pagerBottom' => true, 
+			'getVars' => array(), // for pager, or use $input->whitelist
+			'numPageLinks' => 10, // for pager
+			); 
+
+		if(isset($arguments[0]) && is_array($arguments[0])) $options = $arguments[0]; 
+		$options = array_merge($defaultOptions, $options); 
+
+		$out = str_replace('{listClass}', $options['listClass'], $options['listOpen']); 
+		$listItem = $options['listItem']; 
+		$fields = array();
+		if(preg_match_all('/\{[-_a-z0-9|]+\}/i', $options['listItem'], $matches)) $fields = $matches[0]; 
+		
+		foreach($pageArray as $page) {
+			if(!$page->viewable()) continue; 
+			$values = array();
+			foreach($fields as $field) $values[$field] = $page->get(trim($field, '{}')); 
+			$out .= str_replace($fields, $values, $options['listItem']); 
+		}
+
+		$out .= $options['listClose']; 
+
+		if(($options['pagerTop'] || $options['pagerBottom']) && $pageArray->getLimit()) {
+			$pager = $this->modules->get('MarkupPagerNav'); 	
+			$pager->setBaseUrl($this->page->url); 
+			if($pager) {
+				$pagerOut = $pager->render($pageArray, array(
+					'getVars' => $options['getVars'], 
+					'numPageLinks' => $options['numPageLinks'], 
+					)); 
+				if($options['pagerTop']) $out = $pagerOut . $out; 
+				if($options['pagerBottom']) $out .= $pagerOut; 
+			}
+		} 
+
+		$event->return = $out; 
+	}
+
+	public function renderPager(HookEvent $event) {
+		$pageArray = $event->object; 
+		if(!$pageArray->getLimit()) return; 
+		$arguments = $event->arguments; 
+		$options = array();
+		if(isset($arguments[0]) && is_array($arguments[0])) $options = $arguments[0]; 
+		$pager = $this->modules->get('MarkupPagerNav'); 
+		$pager->setBaseUrl($this->page->url . ($this->page->urlSegment ? $this->page->urlSegment . '/' : '')); 
+		$event->return = $pager->render($pageArray, $options); 
+	}
+
+
+}
+

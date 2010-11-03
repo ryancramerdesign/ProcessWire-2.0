@@ -1,0 +1,35 @@
+<?php
+
+class InputfieldFloat extends InputfieldInteger {
+	
+	public static function getModuleInfo() {
+		return array(
+			'title' => 'Float',
+			'version' => 100,
+			'summary' => 'Floating point (decimal) number with rounding',
+			'permanent' => true, 
+			);
+	}
+
+	public function init() {
+		parent::init();
+		$this->set('precision', 2); 
+	}
+
+	protected function sanitizeValue($value) {
+		return strlen("$value") ? round((float) $value, $this->precision) : '';
+	}
+
+	public function ___getConfigInputfields() {
+		$inputfields = parent::___getConfigInputfields();
+
+		$f = $this->modules->get('InputfieldInteger');
+		$f->attr('name', 'precision'); 
+		$f->label = 'Number of decimal digits to round to';
+		$f->attr('value', $this->precision); 
+		$f->attr('size', 8); 
+		$inputfields->append($f);
+
+		return $inputfields; 
+	}
+}

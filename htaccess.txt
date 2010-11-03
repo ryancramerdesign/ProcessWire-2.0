@@ -1,0 +1,46 @@
+#################################################################################################
+# START PROCESSWIRE HTACCESS DIRECTIVES
+#################################################################################################
+
+Options -Indexes
+Options +FollowSymLinks
+RewriteEngine On
+
+# -----------------------------------------------------------------------------------------------
+# Access Restrictions: Keep web users out of ProcessWire system files
+# -----------------------------------------------------------------------------------------------
+
+RewriteCond %{REQUEST_URI} (^|/)\.htaccess$ [NC,OR]
+RewriteCond %{REQUEST_URI} (^|/)site/assets/(cache|logs|backups|sessions|config|install)($|/.*$) [OR]
+RewriteCond %{REQUEST_URI} (^|/)site/install($|/.*$) [OR]
+RewriteCond %{REQUEST_URI} (^|/)wire/templates-admin($|/|/.*\.(php|html?|tpl|inc))$ [OR]
+RewriteCond %{REQUEST_URI} (^|/)site/templates($|/|/.*\.(php|html?|tpl|inc))$ [OR]
+RewriteCond %{REQUEST_URI} (^|/)site/assets($|/|/.*\.php)$ [OR]
+RewriteCond %{REQUEST_URI} (^|/)wire/(core|modules)/.*\.(php|inc|tpl|module)$ [OR]
+RewriteCond %{REQUEST_URI} (^|/)(COPYRIGHT|INSTALL|htaccess)\.txt$ 
+RewriteRule ^.*$ - [F,L]
+
+# ----------------------------------------------------------------------------------------------- 
+# Ensure that the URL follows the name-format specification required by ProcessWire
+# ----------------------------------------------------------------------------------------------- 
+
+RewriteCond %{REQUEST_URI} "^[-_.a-zA-Z0-9/]*$"
+
+# -----------------------------------------------------------------------------------------------
+# If the request is for a file or directory that physically exists on the server,
+# then don't give control to ProcessWire, and instead load the file
+# ----------------------------------------------------------------------------------------------- 
+
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+
+# ----------------------------------------------------------------------------------------------- 
+# Pass control to ProcessWire if all the above directives allow us to this point.
+# ----------------------------------------------------------------------------------------------- 
+
+RewriteRule ^(.*)$ index.php?it=$1 [L,QSA]
+
+#################################################################################################
+# END PROCESSWIRE HTACCESS DIRECTIVES
+#################################################################################################
+

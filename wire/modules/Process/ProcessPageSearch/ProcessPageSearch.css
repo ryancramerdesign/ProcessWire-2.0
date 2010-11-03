@@ -1,0 +1,43 @@
+
+#ProcessPageSearchForm {
+	position: absolute;
+	right: 0;
+	top: 88px; 
+}
+
+#ProcessPageSearchSubmit {
+	display: none;
+}
+
+#ProcessPageSearchQuery {
+	width: 150px; 
+}
+
+#ProcessPageSearchResults {
+	border-bottom: 1px dotted #ccc; 
+}
+
+#ProcessPageSearchResults li {
+	padding: 0.25em 0;
+	margin: 0; 
+	background: #fff; 
+	border-top: 1px dotted #ccc; 
+}
+
+#ProcessPageSearchResults li a,
+#ProcessPageSearchResults li a span {
+	display: block;
+}
+
+#ProcessPageSearchResults li a span.ProcessPageSearchResult_title {
+	font-weight: bold; 
+}
+
+#ProcessPageSearchResults li a span.ProcessPageSearchResult_path {
+	color: #999; 
+}
+
+#ProcessPageSearchResults li a:hover {
+	text-decoration: none; 
+	background: #ffffdd; 
+}

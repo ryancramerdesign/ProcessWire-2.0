@@ -1,0 +1,13 @@
+ul.Inputfields .InputfieldText,
+ul.Inputfields .InputfieldPassword {
+	width: 150px; 
+	clear: none; 
+	float: left;
+	margin-top: 0;
+	margin-left: -1px; 
+}
+
+ul.Inputfields .InputfieldSubmit {
+	clear: both; 
+}
+

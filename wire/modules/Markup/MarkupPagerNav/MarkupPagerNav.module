@@ -1,0 +1,357 @@
+<?php
+
+
+class PagerNavItem {
+	const typeCurrent = 'current';
+	const typeFirst = 'first';
+	const typePrevious = 'previous';
+	const typeNext = 'next';
+	const typeLast = 'last';
+	const typeSeparator = 'separator';
+
+	protected $data = array(
+		'label' => '',
+		'pageNum' => 0,
+		'type' => '', // first, previous, next, last, current, or separator
+		); 
+
+	public function __construct($label, $pageNum, $type = '') {
+		$this->data['label'] = $label;
+		$this->data['pageNum'] = $pageNum;
+		$this->data['type'] = $type;
+	}
+
+	public function __get($property) {
+		return isset($this->data[$property]) ? $this->data[$property] : false;
+	}
+
+	public function __set($property, $value) {
+		$this->data[$property] = $value; 
+	}
+}
+
+class PagerNav implements IteratorAggregate {
+	/*
+	USAGE EXAMPLE:
+
+	foreach($pager as $pageLabel => $pageNum) {
+		$class = "action";
+		if($pageNum == $pager->getCurrentPage()) $class .= " on";
+		$out .= "<li><a class='$class' href='$baseUrl$pageNum/'>$pageLabel</a></li>";
+	}
+	*/
+
+	protected $totalPages = 0;
+	protected $currentPage = 0;
+	protected $pager = NULL;
+	protected $numPageLinks = 10;
+	protected $totalItems = 0;
+	protected $firstItem = 0;
+	protected $itemsPerPage = 0;
+	protected $zeroBased = false;
+	protected $labels = array('previous' => 'prev', 'next' => 'next'); 
+	protected $separator = NULL;
+
+	public function __construct($totalItems, $itemsPerPage, $currentPage) {
+
+		// note that the page numbers are zero based.
+		// if you are one based, then subtract one from currentPage before passing in here
+
+		if(!$itemsPerPage) throw new WireException("itemsPerPage must be more than 0"); 
+
+		$this->totalItems = $totalItems; 
+		$this->currentPage = $currentPage-1;
+		$this->itemsPerPage = $itemsPerPage;
+
+		$this->firstItem = $this->currentPage * $this->itemsPerPage;
+
+		/*
+		if($totalItems >= ($itemsPerPage * 2)) {
+			$this->totalPages = floor($this->totalItems / $this->itemsPerPage)-1; 
+		} else {
+			//$this->totalPages = ceil($this->totalItems / $this->itemsPerPage)-1; 
+			$this->totalPages = ceil($this->totalItems / $this->itemsPerPage); 
+		}
+		*/
+		if($this->totalItems > 0) $this->totalPages = ceil($this->totalItems / $this->itemsPerPage)-1; 
+			else $this->totalPages = 0; 
+
+		/*
+		echo 	"totalItems: " . $this->totalItems . "<br />" . 
+			"totalPages: " . $this->totalPages . "<br />" . 	
+			"currentPage: " . $this->currentPage . "<br />" . 
+			"itemsPerPage: " . $this->itemsPerPage . "<br />";
+		*/
+
+		if($this->totalPages && (($this->totalPages * $this->itemsPerPage) >= $this->totalItems)) 
+			$this->totalPages--; // totalPages zero based
+		$this->separator = new PagerNavItem('', 0, PagerNavItem::typeSeparator); 
+	}	
+
+
+	public function getPager() {
+
+		// returns array($pageLabel => $pageNum, ...)
+
+		if($this->totalItems <= $this->itemsPerPage) return array();
+		if(!is_null($this->pager)) return $this->pager;
+		$this->pager = array();
+
+
+		if($this->numPageLinks) {
+			$numPageLinks = $this->numPageLinks-1;
+			//$numHalf = (int) round($numPageLinks / 2); 
+			$numHalf = (int) floor($numPageLinks / 2); 
+			$startPage = $this->currentPage - $numHalf; 
+
+			if($startPage <= 0) {
+				$startPage = 0;
+
+			} else if($startPage > 0) {
+				$numPageLinks--;
+			}
+
+			$endPage = $startPage + $numPageLinks;
+
+			if($endPage > $this->totalPages) {
+				$endPage = $this->totalPages; 
+				$startPage = $endPage - $numPageLinks;
+				if($startPage < 0) $startPage = 0;
+			}		
+
+		} else {
+			$startPage = 0; 
+			$endPage = $this->totalPages; 
+		}
+
+		/*
+		echo 	"numPageLinks=$numPageLinks<br />" . 
+			"numHalf=$numHalf<br />" . 
+			"startPage=$startPage<br />" . 
+			"endPage=$endPage<br />" . 
+			"totalPages={$this->totalPages}<br />" . 
+			"totalItems={$this->totalItems}<br />";
+		*/
+			
+
+		for($n = $startPage; $n <= ($endPage+1); $n++) {
+			$type = $n == ($this->currentPage+1) ? PagerNavItem::typeCurrent : '';
+			if($n) $this->pager[] = new PagerNavItem($n, $n - 1, $type);
+		}
+
+		if($this->currentPage < $this->totalPages) {
+			$useLast = true; 
+			$item = null;
+			$key = null;
+
+			foreach($this->pager as $key => $item) {
+				if($item->pageNum == $this->totalPages) $useLast = false;
+			}
+
+			/*
+			if($item && $item->pageNum == ($this->totalPages-1)) {
+				unset($this->pager[$key]); 
+				$this->pager[] = $this->separator; 
+				$this->pager[] = new PagerNavItem($this->totalPages+1, $this->totalPages); 
+				$useLast = false; 
+			}
+			*/
+
+			if($useLast) {
+				$this->pager[] = $this->separator; 
+				$this->pager[] = new PagerNavItem($this->totalPages+1, $this->totalPages, PagerNavItem::typeLast); 
+			}
+
+			if($this->getLabel('next')) $this->pager[] = new PagerNavItem($this->getLabel('next'), $this->currentPage+1, PagerNavItem::typeNext); 
+		}
+
+		if(count($this->pager) > 1) {
+
+			$firstPageLink = false;
+
+			foreach($this->pager as $key => $item) {
+				// convert from 0-based to 1-based
+				if($item->type != 'separator') $item->pageNum = $item->pageNum+1;
+				if($item->pageNum == 1) $firstPageLink = true; 
+			}
+
+
+			if(!$firstPageLink) {
+
+				// if the first page in pager is page 2, then get rid of it because we're already adding a page 1 (via typeFirst)
+				// and leaving it here would result in 1 ... 2
+				$item = reset($this->pager); 
+				if($item->pageNum == 2) array_shift($this->pager); 
+
+				array_unshift($this->pager, $this->separator); 
+				array_unshift($this->pager, new PagerNavItem(1, 1, PagerNavItem::typeFirst)); // add reference to page 1
+			}
+
+			if($this->currentPage > 0 && $this->getLabel('previous')) {
+				array_unshift($this->pager, new PagerNavItem($this->getLabel('previous'), $this->currentPage, PagerNavItem::typePrevious));
+			}
+
+		} else $this->pager = array(); 
+
+	
+		return $this->pager; 	
+	}
+
+	public function getIterator() { return new ArrayObject($this->getPager()); }
+	public function getFirstItem() { return $this->firstItem; }
+	public function getItemsPerPage() { return $this->itemsPerPage; }
+	public function getCurrentPage() { return $this->currentPage; }
+	public function getTotalPages() { return $this->totalPages+1; }
+	public function getLabel($key) { return isset($this->labels[$key]) ? $this->labels[$key] : ''; }
+	
+	public function setNumPageLinks($numPageLinks) { $this->numPageLinks = $numPageLinks; }
+	public function setZeroBased($zeroBased = true) { $this->zeroBased = $zeroBased; }
+
+	public function setLabels($previous, $next) {
+		$this->labels['previous'] = $previous;
+		$this->labels['next'] = $next;
+	}
+}
+
+
+class MarkupPagerNav extends Wire implements Module {
+
+	protected $options = array(
+		'totalItems' => 0,
+		'itemsPerPage' => 10, 
+		'numPageLinks' => 10, 
+		'getVars' => array(), // or leave empty and populate $input->whitelist (preferred)
+		'pageNum' => 1, 
+		'labelNext' => 'Next', 
+		'labelPrev' => 'Prev', 
+		'queryString' => '', 
+		'baseUrl' => '',
+		); 
+
+	public static function getModuleInfo() {
+		return array(
+			'title' => 'Pager (Pagination) Navigation', 
+			'summary' => 'Generates XHTML markup for pagination navigation', 
+			'version' => 100, 
+			'permanent' => false, 
+			);
+	}
+
+	public function ___render(PageArray $items, $options = array()) {
+
+		$this->totalItems = $items->getTotal();
+		if(!$this->totalItems) return '';
+
+		$this->options = array_merge($this->options, $options); 
+		$this->itemsPerPage = $items->getLimit(); 
+		$this->pageNum = $items->getStart() < $this->itemsPerPage  ? 1 : ceil($items->getStart() / $this->itemsPerPage)+1; 
+
+		if(empty($this->queryString)) {
+			$whitelist = $this->fuel('input')->whitelist->getArray(); 
+			if(empty($this->options['getVars']) && count($whitelist)) $this->setGetVars($whitelist); 
+				else if(!empty($this->options['getVars'])) $this->setGetVars($this->getVars); 
+		}
+
+		$pagerNav = new PagerNav($this->totalItems, $this->itemsPerPage, $this->pageNum); 
+		$pagerNav->setLabels($this->labelPrev, $this->labelNext); 
+		$pagerNav->setNumPageLinks($this->numPageLinks); 
+		$pager = $pagerNav->getPager();
+		$out = '';
+	
+		// if allowPageNum is true, then we can use urlSegment style page numbers rather than GET var page numbers	
+		$allowPageNum = $this->fuel('page')->template->allowPageNum; 
+
+		foreach($pager as $key => $item) {
+			$class = '';
+
+			if($item->type == 'separator') {
+				$out .= "\n\t" . "<li class='MarkupPagerNavSeparator'>&hellip;</li>"; 
+				continue; 
+			} 
+
+			$url = ($this->baseUrl ? $this->baseUrl : './');
+			if($item->pageNum > 1) {
+				if($allowPageNum) $url .= "page{$item->pageNum}";
+					else $url .= ($this->queryString ? "&" : "?") . "page=" . $item->pageNum;
+			}
+			$url .= $this->queryString; 
+
+			if($item->type == 'current') $class = 'MarkupPagerNavOn';
+				else if($item->type) $class = 'MarkupPagerNav' . ucfirst($item->type); 
+
+			// $class = $item->type == 'current' ? " class='MarkupPagerNavOn'" : '';
+			if($class) $class = " class='$class'";
+
+			$out .= "\n\t<li$class><a href='$url'><span>{$item->label}</span></a></li>";
+		}
+
+		if($out) $out = "\n<ul class='MarkupPagerNav'>$out\n</ul>";	
+
+		return $out; 
+	}
+
+	public function __get($property) {
+		return isset($this->options[$property]) ? $this->options[$property] : false; 
+	}
+
+	public function __set($property, $value) {
+		$this->options[$property] = $value; 
+	}
+
+	public function setGetVars(array $vars) { 
+		$this->options['getVars'] = $vars; 
+		$queryString = "?";
+		foreach($this->options['getVars'] as $key => $value) {
+			if(is_array($value)) {
+				$a = $value; 
+				$value = '';
+				foreach($a as $k => $v) $value .= "$v,";
+				$value = rtrim($value, ", "); 
+	
+			}
+			// $queryString .= "$key=" . urlencode(htmlspecialchars($value)) . "&";	
+			$queryString .= "$key=" . urlencode($value) . "&";	
+		}
+		$this->queryString = htmlspecialchars(rtrim($queryString, "?&")); 
+	}
+
+	public function setPageNum($n) { $this->pageNum = $n; }
+	public function setItemsPerPage($n) { $this->itemsPerPage = $n; }
+	public function setTotalItems($n) { $this->totalItems = $n; }
+	public function setNumPageLinks($n) { $this->numPageLinks = $n; }
+	public function setQueryString($s) { $this->queryString = $s; }
+	public function setLabels($next, $prev) { $this->labelNext = $next; $this->labelPrev = $prev; }
+	public function setBaseUrl($url) { $this->baseUrl = $url; }
+
+	/** the following are specific to the Module interface **/
+
+	public function init() { }	
+	public function ___install() { }
+	public function ___uninstall() { }
+
+	public function isSingular() {
+		return false; 
+	}
+
+	public function isAutoload() {
+		return false; 
+	}
+}
+
+/*
+function renderMarkupPagerNav(HookEvent $event) {
+
+	$pageArray = $event->object; 
+	$arguments = $event->arguments; 
+	$options = array();
+
+	if(isset($arguments[0]) && is_array($arguments[0])) $options = $arguments[0]; 
+
+	$pager = Wire::getFuel('modules')->get('MarkupPagerNav'); 	
+	$event->return = $pager->render($pageArray, $options); 
+	
+}
+
+Wire::addHook("PageArray::renderPager", null, "renderMarkupPagerNav"); 
+
+*/

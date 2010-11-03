@@ -1,0 +1,44 @@
+<?php
+
+/**
+ * A Page List Selector for selecting a single page
+ *
+ */
+class InputfieldPageListSelect extends Inputfield {
+
+	public static function getModuleInfo() {
+		return array(
+			'title' => 'Page List Select',
+			'version' => 100,
+			'summary' => 'Selection of a single page from a ProcessWire page tree list',
+			'permanent' => true, 
+			);
+	}
+
+	public function init() {
+		$this->fuel('modules')->get('ProcessPageList'); // prerequisite module
+
+	}
+
+	public function ___render() {
+
+		// require javascript
+		$class = $this->className(); 
+		$config = $this->fuel('config'); 
+		$this->config->scripts->add($this->config->urls->$class . "$class.js");
+
+		// if($this->value) $pageName = $this->fuel('pages')->get($this->value)->name; 
+		// 	else $pageName = '';
+
+		$out =	"\n<input type='text' " . $this->getAttributesString() . " />"; 
+		
+		return $out; 
+	}
+
+	public function ___processInput(WireInputData $input) {
+		parent::___processInput($input); 
+		$this->value = (int) $this->value; 
+		return $this; 
+	}
+	
+}
