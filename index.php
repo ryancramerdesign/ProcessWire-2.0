@@ -76,7 +76,7 @@ $config->scripts = new FilenameArray();
  * Include user-specified configuration options
  *
  */
-require($rootPath . '/' . $siteDir . "/config.php"); 
+@include($rootPath . '/' . $siteDir . "/config.php"); 
 
 /*
  * If debug mode is on then echo all errors, if not then disable all error reporting
