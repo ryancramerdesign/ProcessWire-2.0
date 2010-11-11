@@ -55,6 +55,25 @@ INSTALLATION FROM GIT
    you through the rest of the installation.  
 
 
+TROUBLESHOOTING
+---------------------------------------------------------------------------
+If you run into a blank screen or an error you don't expect, turn on debug
+mode by doing the following:
+
+1. Edit this file: 
+   /site/config.php
+
+2. Find this line: 
+   $config->debug = false; 
+
+3. Change the 'false' to 'true', like below, and save. 
+   $config->debug = true; 
+
+This can be found near the bottom of the file. It will make PHP and 
+ProcessWire report all errors, warnings, notices, etc. Of course, you'll
+want to set it back to false once you've resolved any issues. 
+
+
 HAVE QUESTIONS, NEED HELP, OR FOUND A BUG?
 ------------------------------------------
 Please contact Ryan at: 
@@ -62,3 +81,4 @@ http://www.ryancramer.com/contact/
 
 
 ProcessWire, Copyright 2010 by Ryan Cramer
+
