@@ -136,8 +136,8 @@ class Sanitizer extends Wire {
 
 		$defaultOptions = array(
 			'multiLine' => false,
-			'maxLength' => 1024, 
-			'maxBytes' => 255, 
+			'maxLength' => 255, 
+			'maxBytes' => 1024, 
 			'allowableTags' => '', 
 			'inCharset' => 'UTF-8', 
 			'outCharset' => 'UTF-8', 

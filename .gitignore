@@ -1,0 +1,9 @@
+.DS_Store?
+*.old
+*.old/*
+sess_*
+*.cache
+*.swp
+*.sh
+site/*
+.htaccess

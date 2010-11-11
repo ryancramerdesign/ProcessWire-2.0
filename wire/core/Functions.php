@@ -15,9 +15,25 @@
  */
 
 /**
- * Return a ProcessWire Fuel variable, or NULL if it doesn't exist
+ * Return a ProcessWire API variable, or NULL if it doesn't exist
+ *
+ * Same as fuel() only $name cannot be ommitted to return all fuel. 
+ * And the wire() function is the recommended way to access the API when included from other PHP scripts.
+ *
+ * @param string $name If ommitted, returns a Fuel object with references to all the fuel.
+ * @return mixed Fuel value if available, NULL if not. 
+ *
+ */
+function wire($name) {
+	return Wire::getFuel($name); 
+}
+
+/**
+ * Return all Fuel, or specified ProcessWire API variable, or NULL if it doesn't exist.
  *
  * Same as Wire::getFuel($name) and Wire::getAllFuel();
+ * When a $name is specified, this function is identical to the wire() function.
+ * Both functions exist more for consistent naming depending on usage. 
  *
  * @param string $name If ommitted, returns a Fuel object with references to all the fuel.
  * @return mixed Fuel value if available, NULL if not. 
@@ -27,7 +43,6 @@ function fuel($name = '') {
 	if(!$name) return Wire::getAllFuel();
 	return Wire::getFuel($name); 
 }
-
 
 /**
  * Indent the given string with $numTabs tab characters
