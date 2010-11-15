@@ -33,7 +33,7 @@ $wire = null;
  *
  */
 $rootPath = dirname(__FILE__);
-$rootURL = isset($_SERVER['HTTP_HOST']) ? substr($rootPath, strlen($_SERVER['DOCUMENT_ROOT'])) . '/' : '/';
+$rootURL = isset($_SERVER['HTTP_HOST']) ? substr($rootPath, strlen(rtrim($_SERVER['DOCUMENT_ROOT'], '/'))) . '/' : '/';
 $wireDir = 'wire';
 $coreDir = "$wireDir/core";
 $siteDir = "site";
