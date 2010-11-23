@@ -76,7 +76,7 @@ var $iframe;
 				if(imgLink.length) queryString += "&link=" + escape(imgLink);
 				queryString += "&winwidth=" + windowWidth; 
 
-				$iframe = $('<iframe id="pwimage_iframe" frameborder="0" src="' + modalUri + queryString + '"></iframe>'); 
+				$iframe = $('<iframe id="pwimage_iframe" width="100%" frameborder="0" src="' + modalUri + queryString + '"></iframe>'); 
 
 				$iframe.dialog({
 					title: "Select Image", 
@@ -88,13 +88,14 @@ var $iframe;
 						opacity: 0.7,
 						background: "black"
 					}
-				}).width(windowWidth).height(windowHeight); 
+				}).width(windowWidth).height(windowHeight);
 
 				$iframe.load(function() {
 
 					var $i = $iframe.contents();
 
 					if($i.find("#selected_image").size() > 0) {
+
 						$iframe.dialog("option", "buttons", {
 
 							"Insert This Image": function() {
@@ -153,14 +154,16 @@ var $iframe;
 							Cancel: function() {
 								$iframe.dialog("close"); 
 							}
-						}).dialog("option", "title", "Edit Image"); 
+
+						}).dialog("option", "title", "Edit Image").width(windowWidth).height(windowHeight);
+
 
 					} else {
 						$iframe.dialog("option", "buttons", {
 							Cancel: function() {
 								$iframe.dialog("close"); 
 							}
-						}); 
+						}).width(windowWidth).height(windowHeight);
 					}
 
 

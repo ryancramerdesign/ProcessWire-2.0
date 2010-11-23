@@ -12,35 +12,21 @@ $(document).ready(function() {
 	$(".Inputfields .InputfieldStateCollapsed > label.ui-widget-header span.ui-icon")
 		.removeClass('ui-icon-triangle-1-s').addClass('ui-icon-triangle-1-e'); 
 
-	/*
-	$("label.infield").each(function() {
+	$(".ui-button").hover(function() {
+		$(this).removeClass("ui-state-default").addClass("ui-state-hover");
+	}, function() {
+		$(this).removeClass("ui-state-hover").addClass("ui-state-default");
+	}).click(function() {
+		$(this).removeClass("ui-state-default").addClass("ui-state-active");
+	});
 
-		var $label = $(this); 
-		var labelFor = $label.attr('for'); 
-		if(labelFor.length < 1) return; 
-		var $field = $('#' + labelFor); 
-		if(!$field) return; 
+	$("#content a > button").click(function() {
+		window.location = $(this).parent("a").attr('href'); 
+	}); 
 
-		var id = $field.attr('id'); 
+	if($.browser.msie && $.browser.version < 8) {
+		$("#content .container").html("<h2>ProcessWire does not support IE7 and below at this time. Please try again with a newer browser.</h2>").show();
+	}
 
-                $field.focus(function() {
-                        $label.hide();
-                }).blur(function() {
-                        if($(this).val().length < 1) $label.show();
-                }).change(function() {
-                        if($(this).val().length < 1) $label.show();
-                                else $label.hide();
-                });
-
-		$label.parent().css('position', 'relative'); 
-		$label.css({
-			position: 'absolute', 
-			top: '0.25em',
-			left: '0.25em', 
-			color: '#999999'
-		}); 
-	
-	}).change();
-	*/
 
 }); 

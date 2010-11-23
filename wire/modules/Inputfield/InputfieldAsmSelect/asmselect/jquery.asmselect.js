@@ -273,7 +273,7 @@
 					.hide();
 
 				if(options.jQueryUI) {
-					$item.addClass('ui-state-default ui-priority-secondary')
+					$item.addClass('ui-state-default')
 					.hover(function() {
 						$(this).addClass('ui-state-hover').removeClass('ui-state-default'); 
 					}, function() {

@@ -44,7 +44,7 @@ var tinymceSelection = null;
 					if(target.length) $i.find("#link_target").attr('checked', 'checked'); 
 				});
 
-				var windowWidth = $(window).width()-300; 
+				var windowWidth = $(window).width() -300; 
 				var windowHeight = $(window).height()-300; 
 				if(windowHeight > 800) windowHeight = 800; 
 
@@ -78,7 +78,11 @@ var tinymceSelection = null;
 							tinyMCE.execCommand('mceInsertContent', false, html);
 							$iframe.dialog("close"); 
 
+						},
+						Cancel: function() {
+							$iframe.dialog("close"); 
 						}
+
 					}
 				}).width(windowWidth).height(windowHeight); 
 

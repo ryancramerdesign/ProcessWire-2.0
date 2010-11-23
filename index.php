@@ -38,6 +38,7 @@ $wireDir = 'wire';
 $coreDir = "$wireDir/core";
 $siteDir = "site";
 $assetsDir = "$siteDir/assets";
+$adminTplDir = 'templates-admin';
 
 /*
  * Setup ProcessWire class autoloads
@@ -59,7 +60,7 @@ $config->urls->logs = "$assetsDir/logs/";
 $config->urls->files = "$assetsDir/files/";
 $config->urls->tmp = "$assetsDir/tmp/";
 $config->urls->templates = "$siteDir/templates/";
-$config->urls->adminTemplates = "$wireDir/templates-admin/";
+$config->urls->adminTemplates = is_dir("$siteDir/$adminTplDir") ? "$siteDir/$adminTplDir/" : "$wireDir/$adminTplDir/";
 $config->paths = clone $config->urls; 
 $config->paths->root = $rootPath . '/';
 $config->paths->sessions = $config->paths->assets . "sessions/";

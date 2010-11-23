@@ -68,8 +68,9 @@ class ProcessTemplate extends Process {
 				count($template->fieldgroup) 
 				)); 
 		}
-		$table->action(array('new' => 'add')); 
-		return $table->render(); 
+		$table->action(array('Add New Template' => './add')); 
+
+		return $table->render();
 	}	
 
 	/**

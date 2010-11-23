@@ -1,3 +1,5 @@
+
+
 ProcessPageSearch = {
 
         t: 0,
@@ -56,13 +58,13 @@ $(document).ready(function() {
 
 	if($searchQuery.attr('value').length < 1) {
 		$searchQuery.attr('value', label);
-		$searchQuery.css('opacity', 0.5)
+		$searchQuery.css('opacity', 0.6)
 	}
 
 	$searchQuery.focus(function() {
 			if($(this).val() == label) $(this).val('');
 			$(this).css('opacity', 1.0); 
 		}).blur(function() {
-			if($(this).val().length < 1) $(this).val(label).css('opacity', 0.5); 
+			if($(this).val().length < 1) $(this).val(label).css('opacity', 0.6); 
 		}); 
 });

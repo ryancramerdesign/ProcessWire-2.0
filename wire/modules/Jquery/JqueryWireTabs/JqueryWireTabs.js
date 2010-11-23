@@ -19,7 +19,7 @@
 
 		return this.each(function(index) {
 
-			var $tabList = $("<ul></ul>").addClass("WireTabs"); 
+			var $tabList = $("<ul></ul>").addClass("WireTabs nav");
 			var $target = $(this); 
 
 			function init() {

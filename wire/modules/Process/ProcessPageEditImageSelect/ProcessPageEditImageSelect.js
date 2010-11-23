@@ -21,9 +21,8 @@ $(document).ready(function() {
 
 
 
-	var $img = $("#selected_image"); 
 
-	if($img.size()) {
+	function setupImage($img) {
 
 		var originalWidth = $img.width();
 		var $selected_image_dimensions = $("#selected_image_dimensions"); 
@@ -57,8 +56,16 @@ $(document).ready(function() {
 		}).change();
 
 		populateResizeDimensions();
+	}; 
+
+	var $img = $("#selected_image"); 
+
+	if($img.size() > 0) {
+		$img = $img.first();
+
+		if($img.width() > 0) setupImage($img); 
+			else $img.load(setupImage); 
+
 	}
-
-
 
 }); 

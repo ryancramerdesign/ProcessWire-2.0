@@ -26,7 +26,7 @@ class InputfieldSubmit extends Inputfield {
 	public function ___render() {
 		//$out = "\n<input " . $this->getAttributesString() . " />"; 
 		$attrs  = $this->getAttributesString();
-		$out = "\n<button $attrs><span class='ui-button-text'>" . htmlspecialchars($this->attr('value')) . '</span></button>';
+		$out = "\n<button $attrs><span class='ui-button-text'>" . $this->attr('value') . '</span></button>';
 		return $out; 
 	}
 

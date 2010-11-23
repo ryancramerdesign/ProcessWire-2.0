@@ -13,11 +13,12 @@ $bodyClass = $input->get->modal ? 'modal' : '';
 if(!isset($content)) $content = '';
 
 $config->styles->prepend($config->urls->adminTemplates . "styles/main.css"); 
+$config->styles->append($config->urls->adminTemplates . "styles/ui.css"); 
 $config->scripts->append($config->urls->adminTemplates . "scripts/main.js"); 
 
 ?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
+<!DOCTYPE html>
+<html lang="en">
 <head>
 	<meta http-equiv="content-type" content="text/html; charset=utf-8" />
 	<meta name="robots" content="noindex, nofollow" />
@@ -45,15 +46,25 @@ $config->scripts->append($config->urls->adminTemplates . "scripts/main.js");
 
 	<?php foreach($config->styles->unique() as $file) echo "\n\t<link type='text/css' href='$file' rel='stylesheet' />"; ?>
 
+
+	<!--[if IE]>
+	<link rel="stylesheet" type="text/css" href="<?php echo $config->urls->adminTemplates; ?>styles/ie.css" />
+	<![endif]-->	
+
+	<!--[if lt IE 8]>
+	<link rel="stylesheet" type="text/css" href="<?php echo $config->urls->adminTemplates; ?>styles/ie7.css" />
+	<![endif]-->
+
 	<?php foreach($config->scripts->unique() as $file) echo "\n\t<script type='text/javascript' src='$file'></script>"; ?>
 
 </head>
 <body<?php if($bodyClass) echo " class='$bodyClass'"; ?>>
+	<p id='bgtitle'><?php echo $page->parent->title; ?></p>
 	<div id="masthead" class="masthead">
 		<div class="container">
 			<p id="logo">ProcessWire</p>
 
-			<ul id='topnav'>
+			<ul id='topnav' class='nav'>
 				<?php 
 				foreach($page->rootParent->navChildren() as $p) {
 					if(!$p->viewable()) continue; 
@@ -65,7 +76,7 @@ $config->scripts->append($config->urls->adminTemplates . "scripts/main.js");
 
 			</ul>
 
-			<ul id='breadcrumb'>
+			<ul id='breadcrumb' class='nav'>
 				<?php
 				foreach($this->fuel('breadcrumbs') as $breadcrumb) {
 					$title = htmlspecialchars(strip_tags($breadcrumb->title)); 
@@ -103,7 +114,7 @@ $config->scripts->append($config->urls->adminTemplates . "scripts/main.js");
 			<p>
 
 			<?php if(!$user->isGuest()): ?>
-			<span id='userinfo'><?php echo $user->name?> &bull; <a class='action' href='<?php echo $config->urls->admin?>logout/'>logout</a></span>
+			<span id='userinfo'><?php echo $user->name?>  <a class='action' href='<?php echo $config->urls->admin?>logout/'>logout</a></span>
 			<?php endif; ?>
 
 			ProcessWire <?php echo $config->version; ?> &copy; <?php echo date("Y"); ?> by Ryan Cramer 

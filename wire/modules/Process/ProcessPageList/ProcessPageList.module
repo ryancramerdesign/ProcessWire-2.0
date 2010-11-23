@@ -42,6 +42,7 @@ class ProcessPageList extends Process implements ConfigurableModule {
 	public function __construct() {
 		$this->showRootPage = true; 
 		$this->pageLabelField = 'title';
+		$this->limit = self::defaultLimit; 
 	}
 
 	/**
@@ -51,7 +52,7 @@ class ProcessPageList extends Process implements ConfigurableModule {
 	public function init() {
 		parent::init();
 		$this->start = isset($_GET['start']) ? (int) $_GET['start'] : 0; 
-		$this->limit = (isset($_GET['limit']) && $_GET['limit'] < $this->limit) ? (int) $_GET['limit'] : self::defaultLimit; 
+		$this->limit = (isset($_GET['limit']) && $_GET['limit'] < $this->limit) ? (int) $_GET['limit'] : $this->limit; 
 		$this->render = isset($_GET['render']) ? strtoupper($this->sanitizer->name($_GET['render'])) : '';
 	}
 

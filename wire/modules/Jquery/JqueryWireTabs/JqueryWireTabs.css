@@ -14,15 +14,13 @@
 		}
 
 		.WireTabs li a {
-			color: #6b3d14; 
 			border: none; 
 		}
 
 		.WireTabs li a.on {
-			color: #ba5800;  
 		}
 
 		.WireTabs li a em {
-			font-style: normal;
+			font-weight: bold; 
 			border-bottom: 1px dotted #aaa; 
 		}	

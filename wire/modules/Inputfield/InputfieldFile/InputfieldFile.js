@@ -36,6 +36,10 @@ $(document).ready(function() {
 				ui.item.children(".InputfieldFileInfo").removeClass("ui-state-highlight"); 
 			}
 		}); 
+	}).find(".ui-widget-header").hover(function() {
+		$(this).addClass('ui-state-hover'); 
+	}, function() {
+		$(this).removeClass('ui-state-hover'); 
 	}); 
 
 	$(".InputfieldFileUpload input[type=file]").live('change', function() {

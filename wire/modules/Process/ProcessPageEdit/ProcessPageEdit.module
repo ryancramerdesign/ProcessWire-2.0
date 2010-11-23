@@ -197,17 +197,24 @@ class ProcessPageEdit extends Process {
 		$wrapper->attr('title', $title); 
 
 		$pageListParent = $this->page ? $this->page : $this->parent; 
+		if($pageListParent->numChildren) { 
+			$pageList = $this->modules->get('ProcessPageList'); 
+			$pageList->set('id', $pageListParent->id); 
+			$pageList->set('showRootPage', false); 
+		} else $pageList = null;
 
-		$pageList = $this->modules->get('ProcessPageList'); 
-		$pageList->set('id', $pageListParent->id); 
-		$pageList->set('showRootPage', false); 
+		$button = $this->modules->get("InputfieldButton"); 
+		$button->attr('id+name', 'AddPageBtn'); 
+		$button->attr('value', "Add New Page Here");
+		$button->attr('href', "../add/?parent_id={$this->page->id}");
 
 		$field = $this->modules->get("InputfieldMarkup"); 
-		$field->label = "Children";
-		$field->value = $pageList->execute();
-		$field->value .= "<ul class='actions'><li><a href='../add/?parent_id={$this->page->id}'>new</a></li></ul>";
+		$field->label = "Children / Subpages";
+		if($pageList) $field->value = $pageList->execute();
+			else $field->description = "There are currently no children/subpages below this page.";
+		$field->append($button);
 		$wrapper->append($field); 
-
+		
 		$fieldset = $this->modules->get("InputfieldFieldset"); 
 		$fieldset->collapsed = true; 
 		$fieldset->label = "Sort Settings";

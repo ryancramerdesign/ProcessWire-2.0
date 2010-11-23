@@ -47,11 +47,17 @@ class MarkupAdminDataTable extends ModuleJS {
 	}
 
 	public function action(array $action) {
+		foreach($action as $label => $url) { 
+			$this->actions[$label] = $url;
+		}
+		return $this;
+		/*
 		foreach($action as $label => $url) {
 			$a = "<a href='$url'>" . $this->encode($label) . "</a>";	
 			$this->actions[] = $a; 
 		}
 		return $this; 
+		*/
 	}
 
 	public function ___render() {
@@ -85,11 +91,17 @@ class MarkupAdminDataTable extends ModuleJS {
 		$out .= "\n</table>";
 
 		if(count($this->actions)) {
-			$out .= "\n<ul class='actions'>";
-			foreach($this->actions as $action) {
-				$out .= "\n\t<li>$action</li>"; 
+			// $out .= "\n<ul class='actions'>";
+			$out .= "\n<p>";
+			foreach($this->actions as $label => $url) {
+				$button = $this->modules->get("InputfieldButton"); 
+				$button->href = $url;
+				$button->value = $label;
+				$out .= $button->render();
+				// $out .= "\n\t<li>$action</li>"; 
 			}
-			$out .= "\n</ul>";
+			$out .= "\n</p>";
+			//$out .= "\n</ul>";
 		}
 
 		return $out; 

@@ -86,16 +86,16 @@
 }
 
 .PageList .PageListStatusHidden a.PageListPage {
-	color: #b98d6f;
+	/* alternate color when page has a 'hidden' status? */
 }
 
 /**
  * When a page is open, give it a slight yellow background color to highlight the fact
  *
- */
 .PageList .PageListItemOpen > a.PageListPage {
 	background-color: #ffffdd; 
 }
+ */
 
 /**
  * If a page list note is present, it should be hidden until item is open
@@ -172,7 +172,7 @@
  ********************************************************************************************************/
 
 .PageListPagination {
-	font-size: 0.9em;
+	font-size: 0.9166em; 
 	margin: 0.25em 0 !important;
 }
 
@@ -182,7 +182,7 @@
 }
 
 .PageListPagination li a {
-	padding: 0 0.5em;
+	padding: 0.1em 0.5em;
 }
 
 .PageListPagination li a:hover,

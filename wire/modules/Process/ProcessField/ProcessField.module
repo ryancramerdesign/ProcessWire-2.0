@@ -130,7 +130,7 @@ class ProcessField extends Process {
 				));
 		}
 
-                $table->action(array('new' => 'add'));
+                $table->action(array('Add New Field' => './add'));
 
                 return $out . $table->render();
 	}	

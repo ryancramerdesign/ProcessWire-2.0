@@ -20,5 +20,7 @@ $(document).ready(function() {
 			}
 		}); 
 
+	$("#link_page_url").focus();
+
 
 }); 

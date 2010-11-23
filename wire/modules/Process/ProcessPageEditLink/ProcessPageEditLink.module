@@ -63,7 +63,8 @@ class ProcessPageEditLink extends Process {
 		$field->collapsed = Inputfield::collapsedYes; 
 		$form->append($field); 
 
-		return $form->render();
+		return 	"<h2>Enter a URL or select a page to link</h2>" . 
+			$form->render();
 	}
 }
 

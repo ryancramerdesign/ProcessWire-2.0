@@ -35,7 +35,7 @@
 }
 	#wrap_description label {
 		position: absolute; 
-		top: 0.25em; 
+		top: 0; 
 		left: 0.25em; 
 		color: #999; 
 	}

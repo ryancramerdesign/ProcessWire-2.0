@@ -1,27 +1,12 @@
 
-#ProcessPageSearchForm {
-	position: absolute;
-	right: 0;
-	top: 88px; 
-}
-
 #ProcessPageSearchSubmit {
 	display: none;
 }
 
-#ProcessPageSearchQuery {
-	width: 150px; 
-}
-
-#ProcessPageSearchResults {
-	border-bottom: 1px dotted #ccc; 
-}
-
 #ProcessPageSearchResults li {
-	padding: 0.25em 0;
+	border-bottom: 1px dotted #ccc; 
 	margin: 0; 
-	background: #fff; 
-	border-top: 1px dotted #ccc; 
+	padding: 0.25em 0;
 }
 
 #ProcessPageSearchResults li a,
@@ -29,15 +14,13 @@
 	display: block;
 }
 
-#ProcessPageSearchResults li a span.ProcessPageSearchResult_title {
+.ProcessPageSearchResult_path {
+	opacity: 0.75;
+	filter: alpha(opacity = 75); 
+}
+
+.ProcessPageSearchResult_title {
 	font-weight: bold; 
 }
 
-#ProcessPageSearchResults li a span.ProcessPageSearchResult_path {
-	color: #999; 
-}
 
-#ProcessPageSearchResults li a:hover {
-	text-decoration: none; 
-	background: #ffffdd; 
-}

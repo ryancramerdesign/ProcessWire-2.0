@@ -1,0 +1,156 @@
+<?php
+
+class MarkupTwitterFeed extends WireData implements Module {
+
+	public static function getModuleInfo() {
+		return array(
+			'title' => 'Twitter Feed Markup', 
+			'summary' => 'Module that generates a list (UL) for a Twitter feed. Usage: $t = new MarkupTwitterFeed(); echo $t->render("http://twitter RSS feed url");', 
+			'version' => 100, 
+			'permanent' => false, 
+			'singular' => true, 
+			'autoload' => false, 
+			);
+	}
+
+	protected $options = array(
+		'maxItems' => 3, 
+		'cacheSeconds' => 3600, // 1 hour
+		'dateFormat' => "m/d/y g:i a", 
+		'linkUrls' => true, 
+		'showHashTags' => false, 
+		'showAtTags' => true, 
+		'showName' => true, 
+		'showDate' => true, 
+		'listOpen' => "\n<ul class='MarkupTwitterFeed'>",
+		'listClose' => "\n</ul>",
+		'listItemOpen' => "\n\t<li>",
+		'listItemClose' => "</li>",
+		'listItemDateOpen' => " <span class='date'>", 
+		'listItemDateClose' => "</span>", 
+		'listItemLinkOpen' => "<a href='{href}'>", 
+		'listItemLinkClose' => "</a>", 
+		); 
+
+	protected $cachePath; 
+
+	/**
+	 * Define the cache path
+	 *
+	 * Should be done here in the construct rather than the init() because init() is not called on install/uninstall
+	 *
+	 */
+	public function __construct() {
+		$this->cachePath = $this->config->paths->cache . $this->className() . '/';
+	}
+
+	/**
+	 * Create a directory where we will store our cache files
+	 *
+	 */
+	public function ___install() {
+		$path = $this->cachePath; 
+		if(!is_dir($path)) {
+			if(!mkdir($path)) throw new WireException("Unable to create directory: $path"); 
+			if($this->config->chmodDir) chmod($path, octdec($this->config->chmodDir));
+		}
+	}
+
+	/**
+	 * Remove cache files and directory
+	 *
+	 */
+	public function ___uninstall() {
+		$dir = new DirectoryIterator($this->cachePath); 
+		foreach($dir as $file) {
+			if($file->isDir() || $file->isDot()) continue;
+			if($file->isFile() && preg_match('/\.cache$/', $file->getFilename())) unlink($file->getPathname());
+		}
+		rmdir($this->cachePath); 
+	}
+
+	public function init() { 
+	}	
+
+	/**
+	 * Set a configuration option
+	 *
+	 * @param string $key Option name
+	 * @param string|int $value Option value
+	 * @return this
+	 *
+	 */
+	public function set($key, $value) {
+		if($key == 'options' && is_array($value)) $this->options = array_merge($this->options, $value); 
+			else if(array_key_exists($key, $this->options)) $this->options[$key] = $value; 
+			else return parent::set($key, $value); 
+
+		return $this;
+	}
+
+	/**
+	 * Render a Twitter feed
+	 *
+	 */
+	public function render($rssUrl, $options = array()) {
+
+		$out = '';
+		if(count($options)) $this->set('options', $options); 
+		$cacheFile = $this->cachePath . md5($rssUrl) . '.xml.cache';
+
+                if(!is_file($cacheFile) || time() - filemtime($cacheFile) > $this->options['cacheSeconds']) {
+                        $xmlData = @file_get_contents($rssUrl); 
+			if($xmlData === false) return $this->className() . ": Unable to load " . htmlentities($rssUrl);
+                        	else @file_put_contents($cacheFile, $xmlData, LOCK_EX);
+                } else {
+			$xmlData = file_get_contents($cacheFile); 
+			if($xmlData === false) return $this->className() . ": Unable to load XML data cache";
+		}
+
+		$rss = simplexml_load_string($xmlData);
+		if(!$rss) return $this->className() . ": Unable to load RSS feed at " . htmlentities($rssUrl);
+
+		$n = 0;
+		$out .= $this->options['listOpen']; 
+
+		foreach($rss->channel->item as $item) {
+			$out .= $this->renderItem($item); 
+			if(++$n >= $this->options['maxItems']) break;
+		}
+
+		$out .= $this->options['listClose']; 
+
+		return $out;
+	}
+
+	protected function renderItem($item) {
+
+		$text = $item->title;
+		if(!$this->options['showName']) $text = substr($text, strpos($text, ':')+1); 
+		if(!$this->options['showHashTags']) $text = preg_replace('/\#([^\s]+|$)\s*/', '', $text); 
+		if(!$this->options['showAtTags']) $text = preg_replace('/@([^\s]+|$)\s*/', '', $text); 
+
+		$text = htmlspecialchars($text);
+
+		if($this->options['linkUrls'] && strpos($text, "http") !== false && preg_match_all('{(https?://([^ ]+|$))}i', $text, $matches)) {
+			foreach($matches[0] as $key => $match) {
+				// $rel = strpos($matches[0], 'tripsite.com') ? '' : " rel='nofollow'";
+				$link = str_replace('{href}', $match, $this->options['listItemLinkOpen']) . $match . $this->options['listItemLinkClose']; 
+				$text = str_replace($match, $link, $text);
+			}
+		}
+
+		$out = $this->options['listItemOpen'] . $text; 
+
+		if($this->options['showDate']) {
+			$date = strtotime($item->pubDate);
+			$date = date($this->options['dateFormat'], $date);
+			$out .= $this->options['listItemDateOpen'] . $date . $this->options['listItemDateClose']; 
+		}
+
+		$out .= $this->options['listItemClose']; 
+		return $out; 
+	}
+
+}
+

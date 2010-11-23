@@ -94,7 +94,8 @@ class ProcessModule extends Process {
 				$table = $this->modules->get("MarkupAdminDataTable");
 				$table->setEncodeEntities(false); 
 				$table->headerRow($tableHeader); 
-				$out .= "\n<h3 class='ui-widget ui-widget-header'>$section</h3>"; 
+				//$out .= "\n<h3 class='ui-widget ui-widget-header'>$section</h3>"; 
+				$out .= "\n<h2>$section</h2>"; 
 			}
 
 			if($installed) { 

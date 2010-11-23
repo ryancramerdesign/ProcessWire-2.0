@@ -4,16 +4,28 @@ h3.ui-widget-header {
 	font-size: 1.2em; 
 }
 
+#content h2 {
+	margin-bottom: 0.5em; 
+}
+
+table.AdminDataList {
+	margin-top: 0.5em; 
+	margin-bottom: 2em; 
+}
+
 table.AdminDataList td:first-child,
 table.AdminDataList th:first-child {
 	width: 30%; 
 	vertical-align: top; 
-	padding-left: 10px; 
+}
+
+table.AdminDataList td,
+table.AdminDataList th {
+	padding-right: 10px !important; 
 }
 
 table.AdminDataList td:last-child {
 	width: 55%; 
-	padding-right: 10px; 
 }
 
 #ModuleEditForm table.AdminDataList td:first-child {

@@ -4,6 +4,8 @@
 sess_*
 *.cache
 *.swp
+*.swo
 *.sh
 site/*
 .htaccess
+site/config.build.php

@@ -176,17 +176,23 @@ $(document).ready(function() {
 	
 				for(var pagination = firstPagination, cnt = 0; pagination < numPaginations; pagination++, cnt++) {
 
-					var $a = $("<a></a>").html(pagination+1).attr('href', pagination)
-					var $item = $("<li></li>").append($a).addClass('ui-state-default');
+					var $a = $("<a></a>").html(pagination+1).attr('href', pagination).addClass('ui-state-default'); 
+					var $item = $("<li></li>").append($a); // .addClass('ui-state-default');
 
 					if(pagination == curPagination) {
-						$item.addClass("PageListPaginationCurrent ui-state-focus"); 
+						//$item.addClass("PageListPaginationCurrent ui-state-focus"); 
+						$item.addClass("PageListPaginationCurrent").find("a").removeClass('ui-state-default').addClass("ui-state-active"); 
 					}
 
 					$list.append($item); 
 
-					if(!$blankItem) $blankItem = $item.clone().removeClass('PageListPaginationCurrent ui-state-focus'); 
+					if(!$blankItem) {
+						$blankItem = $item.clone().removeClass('PageListPaginationCurrent ui-state-active'); 
+						$blankItem.find('a').removeClass('ui-state-active').addClass('ui-state-default');  
+					}
+					// if(!$blankItem) $blankItem = $item.clone().removeClass('PageListPaginationCurrent').find('a').removeClass('ui-state-focus').addClass('ui-state-default'); 
 					if(!$separator) $separator = $blankItem.clone().removeClass('ui-state-default').html("&hellip;"); 
+					//if(!$separator) $separator = $blankItem.clone().html("&hellip;"); 
 
 					if(cnt >= maxPaginationLinks && pagination < numPaginations) {
 						$lastItem = $blankItem.clone();
@@ -206,18 +212,22 @@ $(document).ready(function() {
 				//if(curPagination+1 < maxPaginationLinks && curPagination+1 < numPaginations) {
 				if(curPagination+1 < numPaginations) {
 					$nextBtn = $blankItem.clone();
-					$nextBtn.find("a").html("&gt;").attr('href', curPagination+1); 
+					$nextBtn.find("a").html("&gt;").attr('href', curPagination+1).addClass('ui-priority-secondary'); 
 					$list.append($nextBtn);
 				}
 
 				if(curPagination > 0) {
 					$prevBtn = $blankItem.clone();
-					$prevBtn.find("a").attr('href', curPagination-1).html("&lt;"); 
+					$prevBtn.find("a").attr('href', curPagination-1).html("&lt;").addClass('ui-priority-secondary');
 					$list.prepend($prevBtn); 
 				}
 
 				$list.find("a").click(paginationClick)
-					.hover(function() { $(this).addClass('ui-state-hover'); }, function() { $(this).removeClass("ui-state-hover"); }); 
+					.hover(function() { 
+						$(this).addClass('ui-state-hover'); 
+					}, function() { 
+						$(this).removeClass("ui-state-hover"); 
+					}); 
 
 
 				return $list;
