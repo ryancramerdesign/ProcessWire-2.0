@@ -23,3 +23,12 @@
 #content .ui-state-error {
 	font-weight: bold; 
 }
+
+#content h2 {
+	margin-top: 1.5em; 
+}
+
+#content form h2:first-child {
+        margin-top: 0;
+}
+
