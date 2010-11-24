@@ -206,7 +206,7 @@ class Installer {
 			$values[$field] = $value; 
 		}
 
-		if(!$values['dbUser'] || !$values['dbName'] || !$values['dbPass']) {
+		if(!$values['dbUser'] || !$values['dbName']) {
 			$this->err("Missing database configuration fields"); 
 			return $this->dbConfig();
 		}

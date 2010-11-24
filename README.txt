@@ -20,7 +20,7 @@ encounter at http://ryancramer.com/contact/
 
 REQUIREMENTS
 ---------------------------------------------------------------------------
-1. A unix-based web server running Apache. 
+1. A web server running Apache. 
 2. PHP version 5.2.3 or greater.
 3. MySQL 5.0.15 or greater.
 4. Apache must have mod_rewrite enabled. 
