@@ -113,6 +113,8 @@ class Modules extends WireArray {
 			$filename = $file->getFilename();
 			$pathname = $file->getPathname();
 
+			if(DIRECTORY_SEPARATOR != '/') $pathname = str_replace(DIRECTORY_SEPARATOR, '/', $pathname); 
+
 			if($file->isDir() && ($level < 1 || is_file("$pathname/$filename.module"))) $this->load($pathname, $level + 1); 
 			if(substr($filename, -7) !== '.module') continue; 
 
@@ -125,7 +127,7 @@ class Modules extends WireArray {
 			}
 
 			$info = $installed[$basename]; 
-			$this->setConfigPaths($basename, $file->getPath()); 
+			$this->setConfigPaths($basename, dirname($pathname)); 
 
 			if($info['flags'] & self::flagsAutoload) { 
 				// include the module and instantiate it

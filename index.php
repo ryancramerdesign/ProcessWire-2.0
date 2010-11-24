@@ -33,6 +33,7 @@ $wire = null;
  *
  */
 $rootPath = dirname(__FILE__);
+if(DIRECTORY_SEPARATOR != '/') $rootPath = str_replace(DIRECTORY_SEPARATOR, '/', $rootPath); 
 $rootURL = isset($_SERVER['HTTP_HOST']) ? substr($rootPath, strlen(rtrim($_SERVER['DOCUMENT_ROOT'], '/'))) . '/' : '/';
 $wireDir = 'wire';
 $coreDir = "$wireDir/core";
@@ -108,7 +109,7 @@ session_name($config->sessionName);
 ini_set('session.use_cookies', true); 
 ini_set('session.use_only_cookies', 1);
 ini_set("session.gc_maxlifetime", $config->sessionExpireSeconds); 
-ini_set("session.save_path", $config->paths->sessions); 
+ini_set("session.save_path", rtrim($config->paths->sessions, '/')); 
 
 /*
  * Load and execute ProcessWire

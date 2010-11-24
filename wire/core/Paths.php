@@ -27,6 +27,16 @@ class Paths extends WireData {
 	}
 
 	/**
+	 * Given a path, normalize it to "/" style directory separators if they aren't already
+	 *
+	 */
+	public static function normalizeSeparators($path) {
+		if(DIRECTORY_SEPARATOR == '/') return $path; 
+		$path = str_replace(DIRECTORY_SEPARATOR, '/', $path); 
+		return $path; 
+	}
+
+	/**
 	 * Set the given path key
 	 *
 	 * If the first character of the provided path is a slash, then that specific path will be used without modification. 
@@ -34,6 +44,7 @@ class Paths extends WireData {
 	 *
 	 */
 	public function set($key, $value) {
+		$value = self::normalizeSeparators($value); 
 		return parent::set($key, $value); 
 	}
 
@@ -45,7 +56,7 @@ class Paths extends WireData {
 		$value = parent::get($key); 
 		if($key == 'root') return $value; 
 		if(!is_null($value)) {
-			if($value[0] == '/') return $value; 
+			if($value[0] == '/' || (DIRECTORY_SEPARATOR != '/' && $value[1] == ':')) return $value; 
 				else $value = $this->root . $value; 
 		}
 		return $value; 

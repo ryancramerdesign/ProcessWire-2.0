@@ -121,8 +121,8 @@ class Installer {
 		if(function_exists("imagecreatetruecolor")) $this->li("Found GD2"); 
 			else $this->err("GD version 2.x (GD2) or newer required"); 
 
-		if(strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') $this->err("Platform appears to be Windows-based. ProcessWire is not currently compatible with Windows."); 
-			else $this->li("Platform: " . PHP_OS); 
+		//if(strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') $this->li("Platform appears to be Windows-based."); 
+		//	else $this->li("Platform: " . PHP_OS); 
 
 		if(function_exists('apache_get_modules')) {
 			$modules = apache_get_modules();
