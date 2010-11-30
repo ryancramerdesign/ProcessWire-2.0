@@ -57,10 +57,13 @@ class DatabaseQuerySelectFulltext extends Wire {
 
 			case '~=':
 				$words = preg_split('/[-\s,]/', $value, -1, PREG_SPLIT_NO_EMPTY); 
+				$n = 0; 
 				foreach($words as $word) {
 					if(DatabaseStopwords::has($word)) continue; 			
+					$n++; 
 					$this->matchContains($tableName, $fieldName, $operator, $word); 
 				}
+				if(!$n) $query->where("1>2"); // force it not to match if all words were stopwords
 				break;
 
 			case '$=':
