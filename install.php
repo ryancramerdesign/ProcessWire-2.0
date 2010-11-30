@@ -108,7 +108,10 @@ class Installer {
 		echo "\n<h2>1. Compatibility Check</h2>\n";
 
 		if(is_file("./site/install/install.sql")) $this->li("Found installation profile in ./site/"); 
-			else $this->err("There is no installation profile present in ./site/. Please go to <a href='http://www.processwire.com/download/'>processwire.com/download</a> and get an installation profile before continuing."); 
+			else {
+				$this->err("There is no installation profile present in ./site/. Please unzip the included ./site.zip file, which will create a directory called ./site/. This is the default/basic installation profile. If you prefer, you may download an alternate installation profile at <a href='http://www.processwire.com/download/'>processwire.com/download</a>."); 
+				return;
+			}
 
 		$v = phpversion();
 		$va = explode(".", phpversion()); 
