@@ -83,7 +83,7 @@ $(document).ready(function() {
 
 				var $action = $("<a></a>").addClass("PageListSelectActionToggle").attr('href', '#').text(options.selectStartLabel).click(function() {
 					if($(this).text() == options.selectStartLabel) {
-						loadChildren(options.selectedPageID, $root, 0, true); 
+						loadChildren(options.rootPageID, $root, 0, true); 
 						$(this).text(options.selectCancelLabel); 
 					} else {
 						$root.children(".PageList").slideUp("fast", function() {
