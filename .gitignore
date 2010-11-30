@@ -7,5 +7,6 @@ sess_*
 *.swo
 *.sh
 site/*
+site.sky/*
 .htaccess
 site/config.build.php

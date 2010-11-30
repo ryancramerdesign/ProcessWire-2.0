@@ -149,28 +149,12 @@ try {
 } catch(Exception $e) {
 
 	/*
-	 * Display errors if debug mode is on or if superuser logged in 
+	 * Formulate error message and send to the error handler
 	 *
 	 */
-	if($config->debug || ($wire && $wire->user && $wire->user->isSuperuser())) {
-		if(isset($_SERVER['HTTP_HOST'])) echo "<pre>";
-		echo "ProcessWire Exception: " . $e->getMessage() . "\n\n" . $e->getTraceAsString();
-		echo "\n\nNote: This error message was shown because debug mode is on or you are logged in as a superuser.\n\n";
-	} else {
-		/* 
-		 * Public facing users just get a http 500 error
-		 *
-		 */
-		header("HTTP/1.1 500 Internal Server Error"); 
-		echo "Internal Server Error";
-	}
 
-	/*
-	 * Log the exception
-	 *
-	 */
-	$log = new FileLog($config->paths->logs . "errors.txt"); 
-	$log->save(($wire && $wire->user ? $wire->user->name : 'unknown') . ': ' . ($wire && $wire->page ? $wire->page->path : '/?/') . ': ' . $e->getMessage()); 
-
+	$errorMessage = "Exception: " . $e->getMessage() . " (in " . $e->getFile() . " line " . $e->getLine() . ")";
+	if($config->debug || ($wire && $wire->user && $wire->user->isSuperuser())) $errorMessage .= "\n\n" . $e->getTraceAsString();
+	trigger_error($errorMessage, E_USER_ERROR); 
 }
 

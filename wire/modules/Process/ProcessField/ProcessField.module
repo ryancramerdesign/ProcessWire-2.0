@@ -96,7 +96,7 @@ class ProcessField extends Process {
 	 */
 	public function ___execute() {
 
-		$out = $this->renderListFilters();
+		$out = $this->config->advanced ? $this->renderListFilters() : '';
                 $table = $this->modules->get("MarkupAdminDataTable");
                 $table->headerRow(array('Name', 'Label', 'Type', 'Notes', 'Templates'));
 

@@ -1,7 +1,7 @@
 $(document).ready(function() {
 	$fields = $(".InputfieldPageListSelect"); 
 	var options = {
-		mode: 'select',
+		mode: 'select'
 	}; 
 	$fields.find("input").ProcessPageList(options).hide();
 }); 

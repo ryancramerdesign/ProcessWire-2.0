@@ -460,6 +460,29 @@ class Pages extends Wire {
 	}
 
 	/**
+	 * Is the given page deleteable?
+	 *
+	 * @param Page $page
+	 * @return bool True if deleteable, False if not
+	 *
+	 */
+	public function isDeleteable(Page $page) {
+
+		$undeleteablePageIDs = array(0, 1, 
+			$this->config->trashPageID, 
+			$this->config->adminRootPageID, 
+			$this->config->http404PageID,
+			$this->config->loginPageID, 
+			);
+
+		$deleteable = true; 
+		if(in_array($page->id, $undeleteablePageIDs)) $deleteable = false; 
+			else if($page instanceof NullPage) $deleteable = false;
+
+		return $deleteable;
+	}
+
+	/**
 	 * Move a page to the trash
 	 *
 	 * If you have already set the parent to somewhere in the trash, then this method won't attempt to set it again. 
@@ -470,7 +493,7 @@ class Pages extends Wire {
 	 *
 	 */
 	public function ___trash(Page $page, $save = true) {
-		if($page->id == $this->config->trashPageID) throw new WireException("The Trash page cannot be placed in the trash"); 
+		if(!$this->isDeleteable($page)) throw new WireException("This page may not be placed in the trash"); 
 		if(!$trash = $this->get($this->config->trashPageID)) {
 			throw new WireException("Unable to load trash page defined by config::trashPageID"); 
 		}
@@ -522,9 +545,7 @@ class Pages extends Wire {
 	 */
 	public function ___delete(Page $page, $recursive = false) {
 
-		if($page instanceof NullPage) throw new WireException("NullPage is not deleteable"); 
-		if(!$page->id) throw new WireException("Can't delete page that doesn't exist in database"); 
-		if($page->id == $this->config->trashPageID) throw new WireException("The Trash page cannot be deleted"); 
+		if(!$this->isDeleteable($page)) throw new WireException("This page may not be deleted"); 
 
 		if($page->numChildren) {
 			if(!$recursive) throw new WireException("Can't delete Page $page because it has one or more children."); 

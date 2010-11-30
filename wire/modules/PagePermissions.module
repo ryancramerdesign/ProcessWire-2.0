@@ -86,7 +86,9 @@ class PagePermissions extends WireData implements Module {
 	 */
 	public function deleteable($event) {
 		$page = $event->object;
-		$event->return = $page->roles()->hasPermission("ProcessPageEditDelete", $this->user);
+		$deleteable = $this->pages->isDeleteable($page); 
+		if($deleteable) $deleteable = $page->roles()->hasPermission("ProcessPageEditDelete", $this->user);
+		$event->return = $deleteable;
 	}
 
 	/**

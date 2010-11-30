@@ -60,6 +60,14 @@ a {
 		color: #7a002b; 	
 	}
 
+.WireFatalError {
+	background: #a30000; 
+	color: #fff; 
+	padding: 1em; 
+	position: relative;
+	z-index: 9999;
+}
+
 
 
 /***********************************************************************************************

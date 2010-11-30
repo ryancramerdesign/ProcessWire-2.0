@@ -22,6 +22,8 @@ require(PROCESSWIRE_CORE_PATH . "Interfaces.php");
 require(PROCESSWIRE_CORE_PATH . "Exceptions.php"); 
 require(PROCESSWIRE_CORE_PATH . "Functions.php"); 
 
+register_shutdown_function('ProcessWireShutDown'); 
+
 /**
  * ProcessWire Bootstrap class
  *
@@ -76,6 +78,8 @@ class ProcessWire extends Wire {
  	 *
 	 */
 	public function load(Config $config) {
+
+		//set_error_handler("ProcessWireErrorHandler");
 	
 		Wire::setFuel('notices', new Notices()); 
 		Wire::setFuel('sanitizer', new Sanitizer()); 
@@ -132,4 +136,71 @@ function ProcessWireClassLoader($className) {
 	} else die($className); 
 }
 
+
+/**
+ * Look for errors at shutdown and log them, plus echo the error if the page is editable
+ *
+ */
+function ProcessWireShutdown() {
+
+	$types = array(
+		E_ERROR => 'Error',
+		E_WARNING => 'Warning',
+		E_PARSE => 'Parse Error',
+		E_NOTICE => 'Notice', 
+		E_CORE_ERROR => 'Core Error', 
+		E_CORE_WARNING => 'Core Warning', 
+		E_COMPILE_ERROR => 'Compile Error', 
+		E_COMPILE_WARNING => 'Compile Warning', 
+		E_USER_ERROR => 'ProcessWire Error', 
+		E_USER_WARNING => 'User Warning', 
+		E_USER_NOTICE => 'User Notice', 
+		E_STRICT => 'Strict Warning', 
+		E_RECOVERABLE_ERROR => 'Recoverable Fatal Error'
+		);
+
+	$fatalTypes = array(
+		E_ERROR,
+		E_CORE_ERROR,
+		E_COMPILE_ERROR,
+		E_USER_ERROR,
+		);
+
+	$error = error_get_last();
+	$type = $error['type'];
+
+	if(in_array($type, $fatalTypes)) {
+
+		$config = wire('config');
+		$user = wire('user');
+		$userName = $user ? $user->name : 'Unknown User';
+		$page = wire('page'); 
+		$path = $page ? $wire->page->url : '/?/'; 
+		$line = $error['line'];
+		$file = $error['file'];
+		$message = "$error[message]";
+		$debug = false; 
+
+		if($type != E_USER_ERROR) $message .= " (line $line of $file)";
+
+		if($config) {
+			$debug = $config->debug; 
+			$logMessage = "$userName:$path:$types[$type]:$message";
+			if($config->adminEmail) @mail($config->adminEmail, 'ProcessWire Error Notification', $logMessage); 
+			$logMessage = str_replace("\n", " ", $logMessage); 
+			$log = new FileLog($config->paths->logs . "errors.txt");
+			$log->save($logMessage); 
+		}
+
+		if($debug || ($user && $user->isSuperuser())) {
+			if($debug) $message .= "\n\nThis error message was shown because the site is in DEBUG mode.";
+				else $message .= "\n\nThis error message was shown because you are logged in as a Superuser.";
+			if(isset($_SERVER['HTTP_HOST'])) $message = "<p class='WireFatalError'>" . nl2br($message) . "</p>";
+			echo "\n\n$message\n\n";
+		} else {
+			header("HTTP/1.1 500 Internal Server Error");
+			echo "Unable to complete this request due to an error";
+		}
+	}
+}
 

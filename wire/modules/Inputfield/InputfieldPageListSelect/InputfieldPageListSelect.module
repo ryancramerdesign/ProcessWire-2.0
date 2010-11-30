@@ -27,9 +27,6 @@ class InputfieldPageListSelect extends Inputfield {
 		$config = $this->fuel('config'); 
 		$this->config->scripts->add($this->config->urls->$class . "$class.js");
 
-		// if($this->value) $pageName = $this->fuel('pages')->get($this->value)->name; 
-		// 	else $pageName = '';
-
 		$out =	"\n<input type='text' " . $this->getAttributesString() . " />"; 
 		
 		return $out; 
