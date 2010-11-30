@@ -21,7 +21,7 @@ class InputfieldCommentsAdmin extends Inputfield {
 			'title' => 'Comments Admin',
 			'version' => 100,
 			'summary' => 'Provides an administrative interface for working with comments',
-			'permanent' => true, 
+			'permanent' => false, 
 			);
 	}
 
