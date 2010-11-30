@@ -13,7 +13,7 @@ RewriteEngine On
 RewriteCond %{REQUEST_URI} (^|/)\.htaccess$ [NC,OR]
 RewriteCond %{REQUEST_URI} (^|/)site/assets/(cache|logs|backups|sessions|config|install)($|/.*$) [OR]
 RewriteCond %{REQUEST_URI} (^|/)site/install($|/.*$) [OR]
-RewriteCond %{REQUEST_URI} (^|/)wire/templates-admin($|/|/.*\.(php|html?|tpl|inc))$ [OR]
+RewriteCond %{REQUEST_URI} (^|/)(wire|site)/templates-admin($|/|/.*\.(php|html?|tpl|inc))$ [OR]
 RewriteCond %{REQUEST_URI} (^|/)site/templates($|/|/.*\.(php|html?|tpl|inc))$ [OR]
 RewriteCond %{REQUEST_URI} (^|/)site/assets($|/|/.*\.php)$ [OR]
 RewriteCond %{REQUEST_URI} (^|/)wire/(core|modules)/.*\.(php|inc|tpl|module)$ [OR]
