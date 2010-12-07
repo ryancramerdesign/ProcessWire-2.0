@@ -128,7 +128,7 @@ function ProcessWireClassLoader($className) {
 	$file = PROCESSWIRE_CORE_PATH . "$className.php"; 
 
 	if(is_file($file)) {
-		require_once($file); 
+		require($file); 
 
 	} else if($modules = Wire::getFuel('modules')) {
 		$modules->includeModule($className);

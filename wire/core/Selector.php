@@ -19,6 +19,8 @@
  *
  */
 
+// require_once(PROCESSWIRE_CORE_PATH . "Selectors.php"); 
+
 /**
  * Selector maintains a single selector consisting of field name, operator, and value.
  * 
@@ -127,6 +129,24 @@ abstract class Selector extends WireData {
 	 */
 	public function __toString() {
 		return $this->str; 
+	}
+
+	/**
+	 * Add all individual selector types to the runtime Selectors
+	 *
+	 */
+	static public function loadSelectorTypes() { 
+		Selectors::addType(SelectorEqual::getOperator(), 'SelectorEqual'); 
+		Selectors::addType(SelectorNotEqual::getOperator(), 'SelectorNotEqual'); 
+		Selectors::addType(SelectorGreaterThan::getOperator(), 'SelectorGreaterThan'); 
+		Selectors::addType(SelectorLessThan::getOperator(), 'SelectorLessThan'); 
+		Selectors::addType(SelectorGreaterThanEqual::getOperator(), 'SelectorGreaterThanEqual'); 
+		Selectors::addType(SelectorLessThanEqual::getOperator(), 'SelectorLessThanEqual'); 
+		Selectors::addType(SelectorContains::getOperator(), 'SelectorContains'); 
+		Selectors::addType(SelectorContainsWords::getOperator(), 'SelectorContainsWords'); 
+		Selectors::addType(SelectorStarts::getOperator(), 'SelectorStarts'); 
+		Selectors::addType(SelectorEnds::getOperator(), 'SelectorEnds'); 
+		Selectors::addType(SelectorBitwiseAnd::getOperator(), 'SelectorBitwiseAnd'); 
 	}
 }
 
@@ -240,20 +260,4 @@ class SelectorBitwiseAnd extends Selector {
 	public static function getOperator() { return '&'; }
 	protected function match($value1, $value2) { return $this->evaluate(((int) $value1) & ((int) $value2)); }
 }
-
-/*
- * Add all individual selector types to the runtime Selectors
- *
- */
-Selectors::addType(SelectorEqual::getOperator(), 'SelectorEqual'); 
-Selectors::addType(SelectorNotEqual::getOperator(), 'SelectorNotEqual'); 
-Selectors::addType(SelectorGreaterThan::getOperator(), 'SelectorGreaterThan'); 
-Selectors::addType(SelectorLessThan::getOperator(), 'SelectorLessThan'); 
-Selectors::addType(SelectorGreaterThanEqual::getOperator(), 'SelectorGreaterThanEqual'); 
-Selectors::addType(SelectorLessThanEqual::getOperator(), 'SelectorLessThanEqual'); 
-Selectors::addType(SelectorContains::getOperator(), 'SelectorContains'); 
-Selectors::addType(SelectorContainsWords::getOperator(), 'SelectorContainsWords'); 
-Selectors::addType(SelectorStarts::getOperator(), 'SelectorStarts'); 
-Selectors::addType(SelectorEnds::getOperator(), 'SelectorEnds'); 
-Selectors::addType(SelectorBitwiseAnd::getOperator(), 'SelectorBitwiseAnd'); 
 
