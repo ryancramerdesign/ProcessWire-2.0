@@ -59,7 +59,7 @@ class Selectors extends WireArray {
 	 *
 	 */
 	public function __construct($selectorStr) {
-		if(empty($this->selectorTypes)) Selector::loadSelectorTypes();
+		if(empty(self::$selectorTypes)) Selector::loadSelectorTypes();
 		$this->extractString($selectorStr); 
 	}
 
