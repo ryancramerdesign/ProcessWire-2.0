@@ -99,7 +99,7 @@ $config->scripts->append($config->urls->adminTemplates . "scripts/main.js");
 	<div id="content" class="content">
 		<div class="container">
 
-			<?php if($page->summary) echo "<h2>{$page->summary}</h2>"; ?>
+			<?php if(trim($page->summary)) echo "<h2>{$page->summary}</h2>"; ?>
 			<?php if($page->body) echo $page->body; ?>
 
 
