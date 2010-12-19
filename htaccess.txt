@@ -17,6 +17,7 @@ RewriteCond %{REQUEST_URI} (^|/)(wire|site)/templates-admin($|/|/.*\.(php|html?|
 RewriteCond %{REQUEST_URI} (^|/)site/templates($|/|/.*\.(php|html?|tpl|inc))$ [OR]
 RewriteCond %{REQUEST_URI} (^|/)site/assets($|/|/.*\.php)$ [OR]
 RewriteCond %{REQUEST_URI} (^|/)wire/(core|modules)/.*\.(php|inc|tpl|module)$ [OR]
+RewriteCond %{REQUEST_URI} (^|/)site/modules/.*\.(php|inc|tpl|module)$ [OR]
 RewriteCond %{REQUEST_URI} (^|/)(COPYRIGHT|INSTALL|README|htaccess)\.txt$ 
 RewriteRule ^.*$ - [F,L]
 

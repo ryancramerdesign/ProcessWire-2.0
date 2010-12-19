@@ -95,14 +95,21 @@ class ProcessTemplate extends Process {
 			$templateFiles[] = $basename; 
 		}
 
-		if(!count($templateFiles)) {
-			$this->message("No new template files were found in " . $this->fuel('config')->urls->templates); 
-			$this->session->redirect('./'); 
-		}
-
 		if(count($this->input->post)) {
-			foreach($this->input->post->templates as $basename) {
-				if(!in_array($basename, $templateFiles)) continue; 
+
+			$postTemplates = $this->input->post->templates; 
+
+			// add any templates without files to the postTemplates
+			if($this->input->post->template_name) {
+				$templateName = trim($this->input->post->template_name); 
+				if(strpos($templateName, ' ')) $templateNames = explode(' ', $templateName); 
+					else $templateNames = array($templateName); 
+				foreach($templateNames as $name) 
+					$postTemplates[] = basename($name); 
+			}
+
+			foreach($postTemplates as $basename) {
+				// if(!in_array($basename, $templateFiles)) continue; 
 				$template = new Template();
 				$template->name = $this->fuel('sanitizer')->name($basename); 
 				$fieldgroup = new Fieldgroup(); 
@@ -112,18 +119,14 @@ class ProcessTemplate extends Process {
 				$template->save();
 				$this->message("Added template and fieldgroup: $basename"); 
 			}
+
 			$this->session->redirect('./'); 
 		}
 
 		$form = $this->buildAddForm($templateFiles);
 		if(count($this->input->post)) $form->processInput($this->input->post); 
 
-		if(count($templateFiles)) {
-			return $form->render();
-		} else {
-			$this->message("There are no additional template files to add in " . $this->fuel('config')->urls->templates); 
-			$this->session->redirect("./"); 
-		}
+		return $form->render();
 	}	
 
 	/**
@@ -138,13 +141,26 @@ class ProcessTemplate extends Process {
 		$form->attr('id', 'ProcessTemplateAdd'); 
 		$form->attr('action', 'add'); 
 		$form->attr('method', 'post'); 
-		$form->description = "This action looks for new template files (ending with .{$this->config->templateExtension}) in $templateUrl";
+		//$form->description = "This action looks for new template files (ending with .{$this->config->templateExtension}) in $templateUrl";
 
-		$field = $this->modules->get('InputfieldCheckboxes');
-		$field->label = 'New Templates'; 
-		$field->description = "The following new templates were found in $templateUrl. Check the box next to each template you want to add."; 
-		$field->attr('id+name', 'templates'); 
-		foreach($templateFiles as $file) $field->addOption($file); 
+		if(count($templateFiles)) { 
+			$field = $this->modules->get('InputfieldCheckboxes');
+			$field->label = "Templates found in $templateUrl*.{$this->config->templateExtension}"; 
+			$field->description = "The following new templates were found in $templateUrl. Check the box next to each template you want to add."; 
+			$field->attr('id+name', 'templates'); 
+			foreach($templateFiles as $file) $field->addOption($file); 
+			$form->append($field); 
+		} else {
+			$this->error("No new template files (*.{$this->config->templateExtension}) were found in $templateUrl"); 
+		}
+
+		$field = $this->modules->get("InputfieldText"); 
+		$field->label = 'Create a new template without a file';
+		$field->description = 
+			"If you want to create a new template even though there is currently no file associated with it, " . 
+			"enter the name of the template here. Leave off the file extension (.{$this->config->templateExtension}).";
+		$field->attr('id+name', 'template_name'); 
+		$field->collapsed = count($templateFiles) ? Inputfield::collapsedYes : Inputfield::collapsedNo; 
 		$form->append($field); 
 
 		/*
@@ -175,8 +191,7 @@ class ProcessTemplate extends Process {
 		if(!$this->template) throw new WireException("No Template specified"); 
 			
 		$this->form = $this->buildEditForm($this->template);
-		$filename = basename($this->template->filename()); 
-		$this->form->description = "$filename is used by {$this->numPages} pages";
+		$this->form->description = "{$this->template->name} is used by {$this->numPages} pages";
 		return $this->form->render();
 	}	
 
@@ -191,6 +206,13 @@ class ProcessTemplate extends Process {
 		$form->attr('id', 'ProcessTemplateEdit'); 
 		$form->attr('action', "save"); 
 		$form->attr('method', 'post'); 
+
+		if(!is_file($template->filename) && !count($this->input->post)) {
+			$this->message(
+				"This template does not have a file associated with it. As a result, viewing pages using this template will produce an error. " . 
+				"If that is not your desired result, upload/create/FTP the template file here: {$template->filename}"
+				); 
+		}
 
 		/*
 		$field = $this->modules->get("InputfieldRadios"); 
