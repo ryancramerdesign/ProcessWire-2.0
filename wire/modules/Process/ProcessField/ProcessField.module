@@ -153,7 +153,7 @@ class ProcessField extends Process {
 
 		if($this->field->id) {
 			$this->setFuel('processHeadline', "Edit Field: {$this->field->name}"); 
-			$this->form->description = "This field is used in " . $this->field->numFieldgroups() . "  fieldgroups"; 
+			$this->form->description = "This field is used in " . $this->field->numFieldgroups() . "  templates/fieldgroups"; 
 		} else {
 			$this->setFuel('processHeadline', 'Add New Field'); 
 			$this->form->description = "After saving the new field, you will be given additional configuration options."; 

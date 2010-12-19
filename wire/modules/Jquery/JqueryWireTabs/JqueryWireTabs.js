@@ -4,6 +4,7 @@
  * Developed by Ryan Cramer for ProcessWire
  *
  */
+
 (function($) {
 
 	$.fn.WireTabs = function(customOptions) {
@@ -61,5 +62,4 @@
 		})
 	}
 })(jQuery); 
-
 

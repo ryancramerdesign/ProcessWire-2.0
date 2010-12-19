@@ -284,6 +284,7 @@ class ProcessPageEdit extends Process {
 			$field->label = "Parent";
 			$field->attr('id+name', 'parent_id'); 
 			$field->attr('value', $this->page->parent_id); 
+			$field->parent_id = 0; 
 			$wrapper->add($field); 
 		}
 

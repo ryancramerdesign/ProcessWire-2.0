@@ -43,7 +43,7 @@ class TextformatterStripTags extends Textformatter implements ConfigurableModule
 		$f->description = 
 			"Enter any markup tags that are allowed, i.e. '<strong><em>'. " . 
 			"Note that this does not strip attributes for any tags you allow. " . 
-			"As a result, you should not allow any tags unless the user is trusted.";
+			"As a result, you should not allow *any* tags unless the user is trusted.";
 		$inputfields->append($f);
 		return $inputfields;
 	}

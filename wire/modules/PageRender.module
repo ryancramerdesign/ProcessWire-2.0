@@ -128,7 +128,10 @@ class PageRender extends WireData implements Module, ConfigurableModule {
 			}
 		}
 
-		if(!$page->outputFormatting) throw new WireException("Page {$page->url} may not be rendered because outputFormatting is set to false. Call \$page->setOutputFormatting(true) before rendering the page.");
+		if(!$page->outputFormatting) throw new WireException(
+			"Page {$page->url} may not be rendered because outputFormatting is set to false. " . 
+			"Call \$page->setOutputFormatting(true) before rendering the page."
+			);
 
 		$output = $page->output;
 		$data = $output->render();
@@ -136,7 +139,6 @@ class PageRender extends WireData implements Module, ConfigurableModule {
 		if($cacheTime && $cacheFile) $cacheFile->save($data);
 		$event->return = $data; 
 	}
-
 
 	/**
 	 * Provide a disk cache clearing capability within the module's configuration screen
