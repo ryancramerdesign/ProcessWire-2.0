@@ -95,7 +95,7 @@ class WireData extends Wire implements IteratorAggregate {
 			$keys = explode('|', $key); 
 			foreach($keys as $k) if($value = $this->get($k)) return $value; 
 		}
-		return parent::__get($key); 
+		return parent::__get($key); // back to Wire
 	}
 
 	/**

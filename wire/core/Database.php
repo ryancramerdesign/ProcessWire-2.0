@@ -49,7 +49,7 @@ class Database extends mysqli {
 
 		if(is_object($sql) && $sql instanceof DatabaseQuery) $sql = $sql->getQuery();
 
-		if(Wire::getFuel('config')->debug) {
+		if(wire('config')->debug) {
 			$timerKey = Debug::timer();
 			if(!$timerFirstStartTime) $timerFirstStartTime = $timerKey; 
 		} else $timerKey = null; 
@@ -57,17 +57,19 @@ class Database extends mysqli {
 		$result = parent::query($sql, $resultmode); 
 
 		if($result) {
-			if(isset($result->num_rows)) $sql .= " [" . $result->num_rows . " rows]";
-			if(!is_null($timerKey)) {
-				$elapsed = Debug::timer($timerKey); 
-				$timerTotalQueryTime += $elapsed; 
-				$timerTotalSinceStart = Debug::timer() - $timerFirstStartTime; 
-				$sql .= " [{$elapsed}s, {$timerTotalQueryTime}s, {$timerTotalSinceStart}s]";
+			if(wire('config')->debug) { 
+				if(isset($result->num_rows)) $sql .= " [" . $result->num_rows . " rows]";
+				if(!is_null($timerKey)) {
+					$elapsed = Debug::timer($timerKey); 
+					$timerTotalQueryTime += $elapsed; 
+					$timerTotalSinceStart = Debug::timer() - $timerFirstStartTime; 
+					$sql .= " [{$elapsed}s, {$timerTotalQueryTime}s, {$timerTotalSinceStart}s]";
+				}
+				self::$queryLog[] = $sql; 
 			}
-			self::$queryLog[] = $sql; 
 
 		} else if($this->throwExceptions) {
-			throw new WireDatabaseException($this->error . (Wire::getFuel('config')->debug ? "\n$sql" : '')); 
+			throw new WireDatabaseException($this->error . (wire('config')->debug ? "\n$sql" : '')); 
 		}
 
 		return $result; 

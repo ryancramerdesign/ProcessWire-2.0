@@ -28,21 +28,21 @@ abstract class Wire implements TrackChanges {
 	/**
 	 * When a hook is specified, there are a few options which can be overridden: This array outlines those options and the defaults. 
 	 *
-	 * - before: execute the hook before the method call? 
-	 * - after: execute the hook after the method call? (allows modification of return value)
+	 * - type: may be either 'method' or 'property'. If property, then it will respond to $obj->property rather than $obj->method().
+	 * - before: execute the hook before the method call? Not applicable if 'type' is 'property'. 
+	 * - after: execute the hook after the method call? (allows modification of return value). Not applicable if 'type' is 'property'.
 	 * - priority: a number determining the priority of a hook, where lower numbers are executed before higher numbers. 
 	 * - allInstances: attach the hook to all instances of this object? (store in staticHooks rather than localHooks). Set automatically, but you may still use in some instances.
 	 * - fromClass: the name of the class containing the hooked method, if not the object where addHook was executed. Set automatically, but you may still use in some instances.
-	 * - getAsProperty: allow the hook to fire on a non-method call? i.e. $obj->key, in addition to $obj->key()
 	 *
 	 */
 	protected static $defaultHookOptions = array(
+		'type' => 'method', 
 		'before' => false,
 		'after' => true, 
 		'priority' => 100,
 		'allInstances' => false,
 		'fromClass' => '', 
-		// 'getAsProperty' => false,
 		);
 
 	/**
@@ -54,11 +54,22 @@ abstract class Wire implements TrackChanges {
 	 */
 	protected static $staticHooks = array();
 
+
 	/**
 	 * Hooks that are local to this instance of the class only. 
 	 *
 	 */ 
 	protected $localHooks = array();
+
+	/**
+	 * A static cache of all hook method/property names for an optimization.
+	 *
+	 * This does not distinguish which class it was added to or whether it was removed. 
+	 * It is only to gain some speed in our __get and __call methods.
+	 *
+	 */
+	protected static $hookMethodCache = array();
+
 
 	/**
 	 * Cached name of this class from the className() method
@@ -147,9 +158,16 @@ abstract class Wire implements TrackChanges {
 	 *
 	 */
 	public function __get($name) {
+
 		if($name == 'fuel') return self::getAllFuel();
 		if($name == 'className') return $this->className();
 		if(!is_null(self::$fuel) && !is_null(self::$fuel->$name)) return self::$fuel->$name; 
+
+		if(self::isHooked($name)) { // potential property hook
+			$result = $this->runHooks($name, array(), 'property'); 
+			return $result['return'];
+		}
+
 		return null;
 	}
 
@@ -162,7 +180,7 @@ abstract class Wire implements TrackChanges {
 	}
 
 	/**
-	 * Provides the implementation for calling hooks in ProcessWire
+	 * Provides the gateway for calling hooks in ProcessWire
 	 * 
 	 * When a non-existant method is called, this checks to see if any hooks have been defined and sends the call to them. 
 	 * 
@@ -172,36 +190,54 @@ abstract class Wire implements TrackChanges {
 	 *
 	 * Hooks can also be added for methods that don't actually exist in the class, allowing another class to add methods to this class. 
 	 *
+	 * See the Wire::runHooks() method for the full implementation of hook calls.
+	 *
 	 * @param string $method
 	 * @param array $arguments
 	 * @return mixed
 	 *
 	 */ 
 	public function __call($method, $arguments) {
+		$result = $this->runHooks($method, $arguments); 
+		if(!$result['methodExists'] && !$result['numHooksRun']) 
+			throw new WireException("Method " . $this->className() . "::$method does not exist or is not callable in this context"); 
+		return $result['return'];
+	}
+
+	/**
+	 * Provides the implementation for calling hooks in ProcessWire
+	 *
+	 * Unlike __call, this method won't trigger an Exception if the hook and method don't exist. 
+	 * Instead it returns a result array containing information about the call. 
+	 *
+	 * @param string $method Method or property to run hooks for.
+	 * @param array $arguments Arguments passed to the method and hook. 
+	 * @param string $type May be either 'method' or 'property', depending on the type of call. Default is 'method'.
+	 * @return array Returns an array with the following information: 
+	 * 	[return] => The value returned from the hook or NULL if no value returned or hook didn't exist. 
+	 *	[numHooksRun] => The number of hooks that were actually run. 
+	 *	[methodExists] => Did the hook method exist as a real method in the class? (i.e. with 3 underscores ___method).
+	 *
+	 */
+	public function runHooks($method, $arguments, $type = 'method') {
+
+		$result = array(
+			'return' => null, 
+			'numHooksRun' => 0, 
+			'methodExists' => false,
+			);
 
 		$realMethod = "___$method";
-		$hooks = $this->localHooks;
-		$return = null;
-		$methodExists = method_exists($this, $realMethod); 
+		if($type == 'method') $result['methodExists'] = method_exists($this, $realMethod);
+		if(!$result['methodExists'] && !self::isHooked($method)) return $result; // exit quickly when we can
 
-		// join in any related static hooks to the instance hooks
-		foreach(self::$staticHooks as $className => $staticHooks) {
-			if($this instanceof $className) $hooks = array_merge($hooks, $staticHooks); 
-		}
-
-		if(!$methodExists) {
-			// if method doesn't exist, then throw error only if it's not been hooked
-			// in this manner, hooks can be added for methods that don't exist
-			$error = true; 	
-			foreach($hooks as $hook) if($hook['method'] == $method) $error = false;
-			if($error) throw new WireException("Method " . $this->className() . "::$method does not exist or is not callable in this context"); 
-		}
+		$hooks = $this->getHooks();
 
 		foreach(array('before', 'after') as $when) {
 
-			if($when === 'after') {
-				if($methodExists) $return = call_user_func_array(array($this, $realMethod), $arguments); 
-					else $return = null;
+			if($type === 'method' && $when === 'after') {
+				if($result['methodExists']) $result['return'] = call_user_func_array(array($this, $realMethod), $arguments); 
+					else $result['return'] = null;
 			}
 
 			foreach($hooks as $priority => $hook) {
@@ -214,7 +250,7 @@ abstract class Wire implements TrackChanges {
 				$event->method = $method;
 				$event->arguments = $arguments;  
 				$event->when = $when; 
-				$event->return = $return; 
+				$event->return = $result['return']; 
 				$event->id = $hook['id']; 
 				$event->options = $hook['options']; 
 
@@ -224,12 +260,54 @@ abstract class Wire implements TrackChanges {
 				if(is_null($toObject)) $toMethod($event); 
 					else $toObject->$toMethod($event); 
 
-				if($when == 'after') $return = $event->return; 
+				$result['numHooksRun']++;
+
+				if($when == 'after') $result['return'] = $event->return; 
 			}	
 
 		}
 
-		return $return;
+		return $result;
+	}
+
+	/**
+	 * Return all hooks associated with this class instance or method (if specified)
+	 *
+	 * @param string $method Optional method that hooks will be limited to
+	 * @return array
+	 *
+	 */
+	public function getHooks($method = '') {
+
+		$hooks = $this->localHooks; 
+
+		foreach(self::$staticHooks as $className => $staticHooks) {
+			// join in any related static hooks to the instance hooks
+			if($this instanceof $className) {
+				// TODO determine if the local vs static priority level may be damaged by the array_merge
+				$hooks = array_merge($hooks, $staticHooks); 
+			}
+		}
+
+		if($method) {
+			$methodHooks = array();
+			foreach($hooks as $priority => $hook) {
+				if($hook['method'] == $method) $methodHooks[$priority] = $hook;
+			}
+			$hooks = $methodHooks;
+		}
+
+		return $hooks;
+	}
+
+	/**
+	 * Returns true if the method/property hooked, false if it isn't.
+	 *
+	 * This is for optimization use. It does not distinguish about class or instance. 
+	 *
+	 */
+	static protected function isHooked($method) {
+		return in_array($method, self::$hookMethodCache);
 	}
 
 	/**
@@ -278,6 +356,8 @@ abstract class Wire implements TrackChanges {
 			'options' => $options, 
 			); 
 
+		self::$hookMethodCache[] = $method; 
+
 		ksort($hooks); // sort by priority
 		return $id;
 	}
@@ -316,6 +396,26 @@ abstract class Wire implements TrackChanges {
 		$options['after'] = true; 
 		if(!isset($options['before'])) $options['before'] = false; 
 		return $this->addHook($method, $toObject, $toMethod, $options); 
+	}
+
+	/**
+	 * Shortcut to the addHook() method which adds a hook to be executed as an object property. 
+	 *
+	 * i.e. $obj->property; in addition to $obj->property(); 
+	 *
+	 * This is the same as calling addHook with the 'type' option set to 'property' in the $options array. 
+	 * Note that descending classes that override __get must call getHook($property) and/or runHook($property).
+	 *
+	 * @param string $method Method name to hook into, NOT including the three preceding underscores
+	 * @param object|null $toObject Object to call $toMethod from, or null if $toMethod is a function outside of an object
+	 * @param string $toMethod Method from $toObject, or function name to call on a hook event
+	 * @param array $options See self::$defaultHookOptions at the beginning of this class
+	 * @return string A special Hook ID that should be retained if you need to remove the hook later
+	 *
+	 */
+	public function addHookProperty($property, $toObject, $toMethod, $options = array()) {
+		$options['type'] = 'property'; 
+		return $this->addHook($property, $toObject, $toMethod, $options); 
 	}
 
 	/**

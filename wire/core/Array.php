@@ -210,11 +210,12 @@ class WireArray extends Wire implements IteratorAggregate, ArrayAccess, Countabl
 		if(is_object($key)) $key = $this->getItemKey($key); 
 		if(is_array($key)) throw new WireException("WireArray::get cannot accept an array as a key"); 
 		if(isset($this->data[$key])) return $this->data[$key]; 
-		$match = null;
 
 		if(Selectors::stringHasOperator($key)) return $this->findOne($key); 
 
-		// TODO determine if the following part still needs to be here 
+		$match = null;
+
+		// TODO determine if the following part still needs to be here (I think it does)
 		foreach($this->data as $wire) {
 			if($wire->name === $key) {
 				$match = $wire; 
@@ -229,12 +230,15 @@ class WireArray extends Wire implements IteratorAggregate, ArrayAccess, Countabl
 	 *
 	 * Example: $myArray->myElement
 	 * Not applicable to numerically indexed arrays. 
+	 * Fuel properties and hooked properties have precedence with this type of call.
 	 * 
 	 * @param int|string $property 
 	 * @return Value of requested index, or false if it doesn't exist. 
 	 */
 	public function __get($property) {
-		return $this->get($property); 
+		$value = parent::__get($property); 
+		if(is_null($value)) $value = $this->get($property); 
+		return $value; 
 	}
 
 	/**
@@ -628,7 +632,7 @@ class WireArray extends Wire implements IteratorAggregate, ArrayAccess, Countabl
 					break;
 				}
 
-				$value = $item->get($selector->field); 
+				$value = $item->{$selector->field}; 
 
 				if($not === $selector->matches("$value")) {
 					$this->remove($key); 
@@ -918,6 +922,5 @@ class WireArray extends Wire implements IteratorAggregate, ArrayAccess, Countabl
 		}
 		return $prevItem; 
 	}
-
 
 }

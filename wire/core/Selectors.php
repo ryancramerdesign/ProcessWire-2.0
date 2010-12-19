@@ -148,7 +148,6 @@ class Selectors extends WireArray {
 	 */
 	protected function extractString($str) {
 
-		$n = 0;
 		$cnt = 0; 
 		
 		while(strlen($str)) {

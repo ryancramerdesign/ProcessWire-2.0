@@ -36,7 +36,8 @@ class CacheFile {
 	 * Construct the CacheFile
 	 * 
 	 * @param string $path Path where cache files will be created 
-	 * @param string|int $id An identifier for this particular cache, unique from others
+	 * @param string|int $id An identifier for this particular cache, unique from others. 
+	 * 	Or leave blank if you are instantiating this class for no purpose except to expire cache files (optional).
 	 * @param int The number of seconds that this cache file remains valid
 	 *
 	 */ 
@@ -44,7 +45,12 @@ class CacheFile {
 
 		$path = rtrim($path, '/') . '/';
 		$this->globalExpireFile = $path . self::globalExpireFilename; 
-		$this->path = $path . $id . '/';
+		$this->path = $id ? $path . $id . '/' : $path;
+
+		if(!is_dir($path)) {
+			mkdir($path);
+			if($this->chmodDir) chmod($path, octdec($this->chmodDir));
+		}
 
 		if(!is_dir($this->path)) {
 			mkdir($this->path);
@@ -55,7 +61,7 @@ class CacheFile {
 			$this->globalExpireTime = @filemtime($this->globalExpireFile); 
 		}
 
-		$this->primaryID = $id; 
+		$this->primaryID = $id ? $id : 'primaryID'; 
 		$this->cacheTimeSeconds = (int) $cacheTimeSeconds; 
 	}
 
