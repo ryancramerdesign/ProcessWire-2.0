@@ -29,6 +29,11 @@ class FieldtypeDatetime extends FieldtypeText {
 			);
 	}
 
+	public function init() {
+		parent::init();
+		$this->allowTextFormatters(false);
+	}
+
 	public function getInputfield(Page $page, Field $field) {
 		$inputfield = $this->modules->get('InputfieldDatetime'); 
 		$inputfield->class = $this->className();
@@ -59,7 +64,8 @@ class FieldtypeDatetime extends FieldtypeText {
 	public function getDatabaseSchema(Field $field) {
 		$schema = parent::getDatabaseSchema($field); 
 		$schema['data'] = 'datetime NOT NULL';
-		$schema['keys']['data'] = 'KEY data (data)'; 
+		unset($schema['keys']['data_exact']); 
+		$schema['keys']['data'] = 'KEY data (data)'; // wipe out keys from parent
 		return $schema;
 	}
 

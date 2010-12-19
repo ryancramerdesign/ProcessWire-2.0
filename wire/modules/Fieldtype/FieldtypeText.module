@@ -123,7 +123,8 @@ class FieldtypeText extends Fieldtype {
 	public function getDatabaseSchema(Field $field) {
 		$schema = parent::getDatabaseSchema($field); 
 		$schema['data'] = 'text NOT NULL';
-		$schema['keys']['data'] = 'FULLTEXT KEY data (data)'; 
+		$schema['keys']['data_exact'] = 'KEY `data_exact` (`data`(255))'; 
+		$schema['keys']['data'] = 'FULLTEXT KEY `data` (`data`)'; 
 		return $schema;
 	}
 
@@ -152,7 +153,7 @@ class FieldtypeText extends Fieldtype {
 				$f->setAttribute('value', is_array($field->textformatters) ? $field->textformatters : array()); 
 
 				$f->description = '' . 
-					'If you want to apply any automatic formatting to the field when it is saved, select one or more text formatters above. ' . 
+					'If you want to apply any automatic formatting to the field when it is prepared for output, select one or more text formatters above. ' . 
 					'If you select more than one, drag them into the order they should be applied.'; 
 
 				$inputfields->append($f);
