@@ -50,11 +50,14 @@ class Modules extends WireArray {
 	/**
 	 * Construct the Modules
 	 *
-	 * @see loadAll()
+	 * @param string $path Path to modules
+	 * @param string $path2 Optional path to siteModules
+	 * @see load()
 	 *
 	 */
-	public function __construct($path) {
+	public function __construct($path, $path2 = null) {
 		$this->load($path); 
+		if($path2 && is_dir($path2)) $this->load($path2);
 	}
 
 	/**
@@ -483,7 +486,7 @@ class Modules extends WireArray {
 	 * @return bool 
  	 *
 	 */
-	protected function isSingular(Module $module) {
+	public function isSingular(Module $module) {
 		$info = $module->getModuleInfo();
 		if(isset($info['singular'])) return $info['singular'];
 		if(method_exists($module, 'isSingular')) return $module->isSingular();
@@ -498,7 +501,7 @@ class Modules extends WireArray {
 	 * @return bool 
  	 *
 	 */
-	protected function isAutoload(Module $module) {
+	public function isAutoload(Module $module) {
 		$info = $module->getModuleInfo();
 		if(isset($info['autoload'])) return $info['autoload'];
 		if(method_exists($module, 'isAutoload')) return $module->isAutoload();

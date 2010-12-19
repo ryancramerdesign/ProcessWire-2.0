@@ -85,7 +85,7 @@ class ProcessWire extends Wire {
 		Wire::setFuel('sanitizer', new Sanitizer()); 
 		Wire::setFuel('db', new Database($config->dbHost, $config->dbUser, $config->dbPass, $config->dbName)); 
 		
-		$modules = new Modules($config->paths->modules);
+		$modules = new Modules($config->paths->modules, $config->paths->siteModules);
 		$fieldtypes = new Fieldtypes();
 		$fields = new Fields();
 		$fieldgroups = new Fieldgroups();
@@ -192,7 +192,7 @@ function ProcessWireShutdown() {
 			$log->save($logMessage); 
 		}
 
-		if($debug || ($user && $user->isSuperuser())) {
+		if($debug || !isset($_SERVER['HTTP_HOST']) || ($user && $user->isSuperuser())) {
 			if($debug) $message .= "\n\nThis error message was shown because the site is in DEBUG mode.";
 				else $message .= "\n\nThis error message was shown because you are logged in as a Superuser.";
 			if(isset($_SERVER['HTTP_HOST'])) $message = "<p class='WireFatalError'>" . nl2br($message) . "</p>";
