@@ -32,12 +32,32 @@ class Pagefiles extends WireArray {
 	protected $unlinkQueue = array();
 
 	/**
+	 * IDs of any hooks added in this instance, used by the destructor
+	 *
+	 */
+	protected $hookIDs = array();
+
+	/**
 	 * Construct an instantance of Pagefiles 
 	 *
 	 * @param Page $page The page associated with this Pagefiles instance
 	 *
 	 */
 	public function __construct(Page $page) {
+		$this->setPage($page); 
+	}
+
+	public function __destruct() {
+		$this->removeHooks();
+	}
+
+	protected function removeHooks() {
+		if(count($this->hookIDs)) {
+			foreach($this->hookIDs as $id) $this->page->filesManager->removeHook($id); 
+		}
+	}
+
+	public function setPage(Page $page) {
 		$this->page = $page; 
 	}
 
@@ -129,6 +149,7 @@ class Pagefiles extends WireArray {
 			$item->unlink();
 		}
 		$this->unlinkQueue = array();
+		$this->removeHooks();
 		return $this; 
 	}
 
@@ -156,7 +177,7 @@ class Pagefiles extends WireArray {
 		if(!$this->isValidItem($item)) throw new WireException("Invalid type to {$this->className}::remove(item)"); 
 		// $item->unlink();
 		if(!count($this->unlinkQueue)) {
-			$this->page->filesManager->addHookBefore('save', $this, 'hookPageSave'); 
+			$this->hookIDs[] = $this->page->filesManager->addHookBefore('save', $this, 'hookPageSave'); 
 		}
 		$this->unlinkQueue[] = $item; 
 		parent::remove($item); 
@@ -213,6 +234,10 @@ class Pagefiles extends WireArray {
 			}
 		}
 		return $basename; 
+	}
+
+	public function uncache() {
+		$this->page = null;		
 	}
 
 }

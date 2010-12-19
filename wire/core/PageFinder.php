@@ -36,7 +36,7 @@ class PageFinder extends Wire {
 	 * Pre-process the selectors to add Page status checks
 	 *
 	 */
-	protected function setupStatusChecks(Selectors $selectors) {
+	protected function setupStatusChecks(Selectors $selectors, $options = array()) {
 
 		$maxStatus = null; 
 
@@ -51,9 +51,19 @@ class PageFinder extends Wire {
 			// if a status was already present in the selector, then just make sure the page isn't unpublished
 			if($maxStatus < Page::statusUnpublished) 
 				$selectors->add(new SelectorLessThan('status', Page::statusUnpublished)); 
+
+		} else if($options['findOne']) {
+			// findOne option, apply optimizations enabling hidden pages to be loaded
+			$selectors->add(new SelectorLessThan('status', Page::statusUnpublished)); 
+
 		} else {
 			// no status is present, so exclude everything hidden and above
 			$selectors->add(new SelectorLessThan('status', Page::statusHidden)); 
+		}
+
+		if($options['findOne']) {
+			$selectors->add(new SelectorEqual('start', 0)); 
+			$selectors->add(new SelectorEqual('limit', 1)); 
 		}
 	}
 
@@ -61,11 +71,16 @@ class PageFinder extends Wire {
 	 * Return all pages matching the given selector.
 	 *
 	 */
-	public function find(Selectors $selectors) {
+	public function find(Selectors $selectors, $options = array()) {
+
+		$defaultOptions = array(
+			'findOne' => false,
+			);
+		$options = array_merge($defaultOptions, $options); 
 
 		$this->start = 0; // reset for new find operation
-		$this->limit = 0; // reset for new find operation
-		if($this->checkStatus) $this->setupStatusChecks($selectors); 
+		$this->limit = 0; 
+		if($this->checkStatus) $this->setupStatusChecks($selectors, $options); 
 		$cnt = count($selectors); 
 		$matches = array(); 
 		$query = $this->getQuery($selectors); 
@@ -88,7 +103,10 @@ class PageFinder extends Wire {
 			$matches[] = $row; 
 		}
 
-		if(count($query->limit)) {
+		if($options['findOne']) {
+			$this->total = count($matches); 
+
+		} else if(count($query->limit)) {
 			$result = $this->db->query("SELECT FOUND_ROWS()"); 	
 			list($this->total) = $result->fetch_array();
 		}
@@ -329,7 +347,7 @@ class PageFinder extends Wire {
 			}
 
 			$sql .= "$limit";
-			$query->select("SQL_CALC_FOUND_ROWS"); 
+			if($this->limit > 1) $query->select("SQL_CALC_FOUND_ROWS"); 
 		}
 
 		if($sql) $query->limit($sql); 
@@ -376,25 +394,33 @@ class PageFinder extends Wire {
 
 	protected function getQueryNativeField(DatabaseQuerySelect $query, $selector, $field) {
 
-		$replacements = array(
-			'parent' => 'parent_id', 
-			'template' => 'templates_id',
-			); 
-
 		$value = $selector->value; 
 		$valueArray = is_array($value) ? $value : array($value); 
-
-		// convert templates specified as a name to the numeric template ID
-		// allows selectors like 'template=my_template_name'
-		if($field == 'template') foreach($valueArray as $k => $v) {
-			if(!ctype_digit("$v")) $valueArray[$k] = (($template = $this->fuel('templates')->get($v)) ? $template->id : 0); 
-		}
-
-		// replace some field names for database use
-		if(isset($replacements[$field])) $field = $replacements[$field]; 
 		$sql = '';
 
+		if($field == 'template') {
+			// convert templates specified as a name to the numeric template ID
+			// allows selectors like 'template=my_template_name'
+			foreach($valueArray as $k => $v) {
+				if(!ctype_digit("$v")) $valueArray[$k] = (($template = $this->fuel('templates')->get($v)) ? $template->id : 0); 
+			}
+			$field = 'templates_id';
+
+		} else if($field == 'parent') {
+			// convert parent fields like '/about/company/history' to the equivalent ID
+			foreach($valueArray as $k => $v) {
+				if(!ctype_digit("$v")) $valueArray[$k] = (($parent = $this->fuel('pages')->get($v)) ? $parent->id : null); 
+			}
+			$field = 'parent_id';
+		}
+
 		foreach($valueArray as $value) { 
+
+			if(is_null($value)) {
+				// an invalid/unknown walue was specified, so make sure it fails
+				$sql .= "1>2";
+				continue; 
+			}
 
 			if(in_array($field, array('created', 'modified'))) {
 				// prepare value for created or modified date fields
@@ -414,9 +440,23 @@ class PageFinder extends Wire {
 		$query->where("($sql)"); 
 	}
 
+	/**
+	 * Make the query specific to all pages below a certain parent (children, grandchildren, great grandchildren, etc.)
+	 *
+	 */
 	protected function getQueryHasParent(DatabaseQuerySelect $query, $selector) {
+
 		$parent_id = (int) $selector->value;
-		$query->join("pages_parents ON (pages_parents.pages_id=pages.parent_id AND (pages_parents.parents_id=$parent_id OR pages_parents.pages_id=$parent_id))"); 
+
+		$query->join(
+			"pages_parents ON (" . 
+				"pages_parents.pages_id=pages.parent_id " . 
+				"AND (" . 
+					"pages_parents.parents_id=$parent_id " . 
+					"OR pages_parents.pages_id=$parent_id " . 
+				")" . 
+			")"
+		); 
 	}
 
 	/**

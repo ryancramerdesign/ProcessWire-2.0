@@ -116,6 +116,14 @@ class PagefilesManager extends Wire {
 	 *
 	 */
 	public function ___save() { }
+
+	/**	
+	 * Uncache/unload any data that should be unloaded with the page
+	 *
+	 */
+	public function uncache() {
+		$this->page = null;
+	}
 	
 
 }

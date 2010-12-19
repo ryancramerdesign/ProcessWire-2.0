@@ -146,7 +146,15 @@ class Page extends WireData implements HasRoles {
 	 * A unique instance ID assigned to the page at the time it's loaded (for debugging purposes only)
 	 *
 	 */
-	public $instanceID = 0; 
+	protected $instanceID = 0; 
+
+	/**
+	 * IDs for all the instances of pages, used for debugging and testing.
+	 *
+	 * Indexed by $instanceID => $pageID
+	 *
+	 */
+	static public $instanceIDs = array();
 
 	/**
 	 * The current page number, starting from 1
@@ -191,7 +199,21 @@ class Page extends WireData implements HasRoles {
 		parent::set('urlSegment', ''); 
 	}
 
+	/**
+	 * Destruct this page instance
+	 *
+	 */
+	public function __destruct() {
+		if($this->instanceID) {
+			// remove from the record of instanceID, so that we have record of page's that HAVEN'T been destructed. 
+			unset(self::$instanceIDs[$this->instanceID]); 
+		}
+	}
 
+	/**
+	 * Clone this page instance
+	 *
+	 */
 	public function __clone() {
 		$track = $this->trackChanges();
 		$this->setTrackChanges(false); 
@@ -267,6 +289,10 @@ class Page extends WireData implements HasRoles {
 				break;
 			case 'pageNum':
 				$this->pageNum = ((int) $value) > 1 ? (int) $value : 1; 
+				break;
+			case 'instanceID': 
+				$this->instanceID = $value; 
+				self::$instanceIDs[$value] = $this->settings['id']; 
 				break;
 			default:
 				$this->setFieldValue($key, $value, $this->isLoaded); 
@@ -354,6 +380,9 @@ class Page extends WireData implements HasRoles {
 			case 'parent_id':
 			case 'parentID': 
 				$value = $this->parent ? $this->parent->id : 0; 
+				break;
+			case 'child':
+				$value = $this->child(); 
 				break;
 			case 'children':
 			case 'subpages': // PW1 
@@ -616,6 +645,7 @@ class Page extends WireData implements HasRoles {
 	 *
 	 */
 	public function child($selector = '') {
+		$selector .= ($selector ? ', ' : '') . "limit=1";
 		$children = $this->children($selector); 
 		return count($children) ? $children->first() : new NullPage();
 	}
@@ -1091,6 +1121,22 @@ class Page extends WireData implements HasRoles {
 	public function filesManager() {
 		if(is_null($this->filesManager)) $this->filesManager = new PagefilesManager($this); 
 		return $this->filesManager; 
+	}
+
+	/**
+	 * Prepare the page and it's fields for removal from runtime memory, called primarily by Pages::uncache()
+	 *
+	 */
+	public function uncache() {
+		foreach($this->fields as $field) {
+			$value = parent::get($field->name);
+			if($value != null && is_object($value)) {
+				if(method_exists($value, 'uncache')) $value->uncache();
+				parent::set($field->name, null); 
+			}
+		}
+		if($this->filesManager) $this->filesManager->uncache(); 
+		$this->filesManager = null;
 	}
 
 }

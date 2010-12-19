@@ -66,10 +66,13 @@ class Pages extends Wire {
 	 * Given a Selector string, return the Page objects that match in a PageArray. 
 	 *
 	 * @param string $selectorString
+	 * @param array $options 
+		- findOne: apply optimizations for finding a single page and include pages with 'hidden' status
 	 * @return PageArray
 	 *
 	 */
-	public function ___find($selectorString) {
+	public function ___find($selectorString, $options = array()) {
+
 		// TODO selector strings with runtime fields, like url=/about/contact/, possibly as plugins to PageFinder
 
 		if($selectorString[0] == '/') {
@@ -93,7 +96,7 @@ class Pages extends Wire {
 		// if(strpos($selectorString, 'parent_id') === false) $selectorString .= ", status<" . Page::statusUnsearchable; 
 
 		$selectors = new Selectors($selectorString); 
-		$pages = $this->pageFinder->find($selectors); 
+		$pages = $this->pageFinder->find($selectors, $options); 
 
 		// note that we save this pagination state here and set it at the end of this method
 		// because it's possible that more find operations could be executed as the pages are loaded
@@ -163,8 +166,9 @@ class Pages extends Wire {
 	 *
 	 */
 	public function ___findOne($selectorString) {
+
 		if($page = $this->getCache($selectorString)) return $page; 
-		$page = $this->find($selectorString)->first();
+		$page = $this->find($selectorString, array('findOne' => true))->first();
 		if(!$page) $page = new NullPage();
 		return $page; 
 	}
@@ -208,7 +212,7 @@ class Pages extends Wire {
 				$loaded[$id] = $page; 
 				unset($ids[$key]); 
 			} else {
-				$loaded[$id] = ''; 
+				$loaded[$id] = ''; // reserve the spot, in this order
 			}
 		}
 
@@ -373,10 +377,18 @@ class Pages extends Wire {
 		$this->uncacheAll();
 
 
-		if($page->numChildren && ($isNew || $page->parentPrevious || $page->forceSaveParents === true)) {
-			// forceSaveParents can be set to any existing page to force it to save all it's pages_parents table data
-			// this recursively includes all it's children too, so savnig the homepage with it set would do the whole site
-			$this->saveParents($page->id, $page->numChildren); 
+		// lastly determine whether the pages_parents table needs to be updated for the find() cache
+		// and call upon $this->saveParents where appropriate. 
+
+		if($isNew && $page->parent_id) $page = $page->parent; // new page, lets focus on it's parent
+		if($page->numChildren) {
+			// check if entries aren't already present perhaps due to outside manipulation or an older version
+			$result = $this->db->query("SELECT COUNT(*) FROM pages_parents WHERE parents_id={$page->id}"); 
+			list($n) = $result->fetch_array();
+			// if entries aren't present, if the parent has changed, or if it's been forced in the API, proceed
+			if($n == 0 || $page->parentPrevious || $page->forceSaveParents === true) {
+				$this->saveParents($page->id, $page->numChildren + ($isNew ? 1 : 0)); 
+			}
 		}
 
 		return $result; 
@@ -401,7 +413,6 @@ class Pages extends Wire {
 		if(!$numChildren) return true; 
 
 		$insertSql = ''; 
-
 		$id = $pages_id; 
 		$cnt = 0;
 
@@ -601,7 +612,7 @@ class Pages extends Wire {
 	 *
 	 */
 	public function cache(Page $page) {
-		$this->pageIdCache[$page->id] = $page; 
+		if($page->id) $this->pageIdCache[$page->id] = $page; 
 	}
 
 	/**
@@ -611,6 +622,7 @@ class Pages extends Wire {
 	 *
 	 */
 	public function uncache(Page $page) {
+		$page->uncache();
 		unset($this->pageIdCache[$page->id]); 
 	}
 
@@ -619,6 +631,16 @@ class Pages extends Wire {
 	 *
 	 */
 	public function uncacheAll() {
+
+		unset($this->pageFinder); 
+		$this->pageFinder = new PageFinder($this->fuel('fieldgroups')); 
+
+		unset($this->sortfields); 
+		$this->sortfields = new PagesSortfields();
+
+		foreach($this->pageIdCache as $id => $page) {
+			if(!$page->numChildren) $this->uncache($page); 
+		}
 		$this->pageIdCache = array();
 	}
 
