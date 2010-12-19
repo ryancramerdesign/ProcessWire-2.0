@@ -18,6 +18,12 @@
 class CommentArray extends WireArray {
 
 	/**
+	 * Page that owns these comments, required to use the renderForm() or getCommentForm() methods. 
+	 *
+	 */
+	protected $page = null; 
+
+	/**
 	 * Per the WireArray interface, is the item a Comment
 	 *
 	 */
@@ -31,7 +37,7 @@ class CommentArray extends WireArray {
 	 * @see CommentList class and override it to serve your needs
 	 *
 	 */
-	public function render($options = array()) {
+	public function render(array $options = array()) {
 		$commentList = $this->getCommentList($options); 
 		return $commentList->render();
 	}
@@ -42,8 +48,8 @@ class CommentArray extends WireArray {
 	 * @see CommentForm class and override it to serve your needs
 	 *
 	 */
-	public function renderForm(Page $page, $options = array()) {
-		$form = $this->getCommentForm($page, $options); 
+	public function renderForm(array $options = array()) {
+		$form = $this->getCommentForm($options); 
 		return $form->render();
 	}
 
@@ -51,7 +57,7 @@ class CommentArray extends WireArray {
 	 * Return instance of CommentList object
 	 *
 	 */
-	public function getCommentList($options = array()) {
+	public function getCommentList(array $options = array()) {
 		return new CommentList($this, $options); 	
 	}
 
@@ -59,9 +65,19 @@ class CommentArray extends WireArray {
 	 * Return instance of CommentForm object
 	 *
 	 */
-	public function getCommentForm(Page $page, $options = array()) {
-		return new CommentForm($page, $this, $options); 
+	public function getCommentForm(array $options = array()) {
+		if(!$this->page) throw new WireException("You must set a page to this CommentArray before using iti.e. \$ca->setPage(\$page)"); 
+		return new CommentForm($this->page, $this, $options); 
 	}
+
+	/**
+	 * Set the page that these comments are on 
+	 *
+	 */ 
+	public function setPage(Page $page) {
+		$this->page = $page; 
+	}
+
 }
 
 

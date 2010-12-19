@@ -67,7 +67,7 @@ class CommentForm extends Wire implements CommentFormInterface {
 	 */
 	protected $options = array(
 		'headline' => "<h3>Post Comment</h3>", 
-		'successMessage' => "<p class='success'>Your submission has been saved.</p>", 
+		'successMessage' => "<p class='success'>Thank you, your submission has been saved.</p>", 
 		'errorMessage' => "<p class='error'>Your submission was not saved due to one or more errors. Please check that you have completed all fields before submitting again.</p>", 
 		'processInput' => true, 
 		'encoding' => 'UTF-8', 
@@ -147,16 +147,29 @@ class CommentForm extends Wire implements CommentFormInterface {
 		$attrs = $options['attrs'];
 		$id = $attrs['id'];
 		$submitKey = $id . "_submit";
-		$inputValues = array('cite' => '', 'email' => '', 'text' => ''); 
+		$inputValues = array(
+			'cite' => '', 
+			'email' => '', 
+			'text' => ''); 
 		$input = $this->fuel('input'); 
 		$divClass = 'new';
 		$class = $attrs['class'] ? " class='$attrs[class]'" : '';
 		$note = '';
 
+		if(is_array($this->session->CommentForm)) {
+			// submission data available in the session
+			foreach($inputValues as $key => $value) {
+				if($key == 'text') continue; 
+				$inputValues[$key] = htmlentities($this->session->CommentForm->$key, ENT_QUOTES, $this->options['encoding']); 
+			}
+		}
+
 		if($options['processInput'] && $input->post->$submitKey == 1) {
 			if($this->processInput()) return $this->renderSuccess(); // success, return
 			$inputValues = array_merge($inputValues, $this->inputValues); 
-			foreach($inputValues as $key => $value) $inputValues[$key] = htmlentities($value, ENT_QUOTES, $this->options['encoding']); 
+			foreach($inputValues as $key => $value) {
+				$inputValues[$key] = htmlentities($value, ENT_QUOTES, $this->options['encoding']); 
+			}
 			$note = "\n\t$options[errorMessage]";
 			$divClass = 'error';
 		}
@@ -208,6 +221,7 @@ class CommentForm extends Wire implements CommentFormInterface {
 
 		$errors = array();
 		$pageFieldName = '';
+		$sessionData = array(); 
 
 		foreach($this->page as $key => $value) if($value === $this->comments) $pageFieldName = $key;
 
@@ -215,6 +229,7 @@ class CommentForm extends Wire implements CommentFormInterface {
 			$comment->$key = $data->$key; 
 			if(!$comment->$key) $errors[] = $key;
 			$this->inputValues[$key] = $comment->$key;
+			if($key != 'text') $sessionData[$key] = $comment->$key; 
 		}
 		
 		if(!count($errors)) {

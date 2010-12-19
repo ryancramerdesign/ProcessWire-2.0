@@ -62,6 +62,7 @@ class FieldtypeComments extends FieldtypeMulti {
 
 	public function getBlankValue(Page $page, Field $field) {
 		$commentArray = new CommentArray(); 
+		$commentArray->setPage($page); 
 		$commentArray->setTrackChanges(true);
 		return $commentArray; 
 	}
