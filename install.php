@@ -117,7 +117,7 @@ class Installer {
 			$this->li("Renamed /site-default => /site"); 
 
 		} else {
-			$this->err("Before continuing, please rename '/site-default' to '/site' This is the default installation profile."); 
+			$this->err("Before continuing, please rename '/site-default' to '/site' -- this is the default installation profile."); 
 			$this->li("If you prefer, you may download an alternate installation profile at processwire.com/download, which you should unzip to /site");
 			$this->btn("Continue", 1); 
 			return;
