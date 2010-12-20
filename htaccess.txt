@@ -19,6 +19,7 @@ RewriteCond %{REQUEST_URI} (^|/)site/assets($|/|/.*\.php)$ [OR]
 RewriteCond %{REQUEST_URI} (^|/)wire/(core|modules)/.*\.(php|inc|tpl|module)$ [OR]
 RewriteCond %{REQUEST_URI} (^|/)site/modules/.*\.(php|inc|tpl|module)$ [OR]
 RewriteCond %{REQUEST_URI} (^|/)(COPYRIGHT|INSTALL|README|htaccess)\.txt$ 
+RewriteCond %{REQUEST_URI} (^|/)site-default/
 RewriteRule ^.*$ - [F,L]
 
 # ----------------------------------------------------------------------------------------------- 

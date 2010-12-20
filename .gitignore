@@ -11,5 +11,7 @@ site-default/assets/logs
 site-default/assets/files
 site-default/assets/sessions
 site-default/assets/cache
-site.sky/*
+site-default/assets/installed.php
+site
+site-skyscrapers
 .htaccess

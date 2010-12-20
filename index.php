@@ -21,6 +21,103 @@
 
 define("PROCESSWIRE", 200); 
 
+/**
+ * Build the ProcessWire configuration
+ *
+ * @return Config
+ *
+ */
+function ProcessWireBootConfig() {
+
+	/*
+	 * Define installation paths and urls
+	 *
+	 */
+	$rootPath = dirname(__FILE__);
+	if(DIRECTORY_SEPARATOR != '/') $rootPath = str_replace(DIRECTORY_SEPARATOR, '/', $rootPath); 
+	$rootURL = isset($_SERVER['HTTP_HOST']) ? substr($rootPath, strlen(rtrim($_SERVER['DOCUMENT_ROOT'], '/'))) . '/' : '/';
+	$wireDir = 'wire';
+	$coreDir = "$wireDir/core";
+	$siteDir = "site";
+	$assetsDir = "$siteDir/assets";
+	$adminTplDir = 'templates-admin';
+
+	/*
+	 * Setup ProcessWire class autoloads
+	 *
+	 */
+	require("$rootPath/$coreDir/ProcessWire.php");
+
+	/*
+	 * Setup configuration data and default paths/urls
+	 *
+	 */
+	$config = new Config();
+	$config->urls = new Paths($rootURL); 
+	$config->urls->modules = "$wireDir/modules/";
+	$config->urls->siteModules = "$siteDir/modules/";
+	$config->urls->core = "$coreDir/"; 
+	$config->urls->assets = "$assetsDir/";
+	$config->urls->cache = "$assetsDir/cache/";
+	$config->urls->logs = "$assetsDir/logs/";
+	$config->urls->files = "$assetsDir/files/";
+	$config->urls->tmp = "$assetsDir/tmp/";
+	$config->urls->templates = "$siteDir/templates/";
+	$config->urls->adminTemplates = is_dir("$siteDir/$adminTplDir") ? "$siteDir/$adminTplDir/" : "$wireDir/$adminTplDir/";
+	$config->paths = clone $config->urls; 
+	$config->paths->root = $rootPath . '/';
+	$config->paths->sessions = $config->paths->assets . "sessions/";
+
+	/*
+	 * Styles and scripts are CSS and JS files, as used by the admin application.
+	 * But reserved here if needed by other apps and templates.
+	 *
+	 */
+	$config->styles = new FilenameArray();
+	$config->scripts = new FilenameArray();
+
+	/*
+	 * Include user-specified configuration options
+	 *
+	 */
+	$configFile = "$rootPath/$siteDir/config.php";
+	$configFileDev = "$rootPath/$siteDir/config-dev.php";
+	@include(is_file($configFileDev) ? $configFileDev : $configFile); 
+
+	/*
+	 * If debug mode is on then echo all errors, if not then disable all error reporting
+	 *
+	 */
+	if($config->debug) {
+		error_reporting(E_ALL | E_STRICT); 
+		ini_set('display_errors', 1);
+	} else {
+		error_reporting(0);
+		ini_set('display_errors', 0);
+	}
+
+	/*
+	 * If PW2 is not installed, go to the installer
+	 *
+	 */
+	if(!$config->dbName && is_file("./install.php") && strtolower($_SERVER['REQUEST_URI']) == strtolower($rootURL)) {
+		require("./install.php");
+		exit(0);
+	}
+
+	/*
+	 * Prepare any PHP ini_set options
+	 *
+	 */
+	session_name($config->sessionName); 
+	ini_set('session.use_cookies', true); 
+	ini_set('session.use_only_cookies', 1);
+	ini_set("session.gc_maxlifetime", $config->sessionExpireSeconds); 
+	ini_set("session.save_path", rtrim($config->paths->sessions, '/')); 
+
+	return $config; 
+}
+
 /*
  * If you include ProcessWire's index.php from another script, or from a
  * command-line script, the $wire variable is your connection to the API.
@@ -28,89 +125,11 @@ define("PROCESSWIRE", 200);
  */
 $wire = null;
 
-/*
- * Define installation paths and urls
+/**
+ * Build the ProcessWire configuration
  *
  */
-$rootPath = dirname(__FILE__);
-if(DIRECTORY_SEPARATOR != '/') $rootPath = str_replace(DIRECTORY_SEPARATOR, '/', $rootPath); 
-$rootURL = isset($_SERVER['HTTP_HOST']) ? substr($rootPath, strlen(rtrim($_SERVER['DOCUMENT_ROOT'], '/'))) . '/' : '/';
-$wireDir = 'wire';
-$coreDir = "$wireDir/core";
-$siteDir = "site";
-$assetsDir = "$siteDir/assets";
-$adminTplDir = 'templates-admin';
-
-/*
- * Setup ProcessWire class autoloads
- *
- */
-require("$rootPath/$coreDir/ProcessWire.php");
-
-/*
- * Setup configuration data and default paths/urls
- *
- */
-$config = new Config();
-$config->urls = new Paths($rootURL); 
-$config->urls->modules = "$wireDir/modules/";
-$config->urls->siteModules = "$siteDir/modules/";
-$config->urls->core = "$coreDir/"; 
-$config->urls->assets = "$assetsDir/";
-$config->urls->cache = "$assetsDir/cache/";
-$config->urls->logs = "$assetsDir/logs/";
-$config->urls->files = "$assetsDir/files/";
-$config->urls->tmp = "$assetsDir/tmp/";
-$config->urls->templates = "$siteDir/templates/";
-$config->urls->adminTemplates = is_dir("$siteDir/$adminTplDir") ? "$siteDir/$adminTplDir/" : "$wireDir/$adminTplDir/";
-$config->paths = clone $config->urls; 
-$config->paths->root = $rootPath . '/';
-$config->paths->sessions = $config->paths->assets . "sessions/";
-
-/*
- * Styles and scripts are CSS and JS files, as used by the admin application.
- * But reserved here if needed by other apps and templates.
- *
- */
-$config->styles = new FilenameArray();
-$config->scripts = new FilenameArray();
-
-/*
- * Include user-specified configuration options
- *
- */
-@include($rootPath . '/' . $siteDir . "/config.php"); 
-
-/*
- * If debug mode is on then echo all errors, if not then disable all error reporting
- *
- */
-if($config->debug) {
-	error_reporting(E_ALL | E_STRICT); 
-	ini_set('display_errors', 1);
-} else {
-	error_reporting(0);
-	ini_set('display_errors', 0);
-}
-
-/*
- * If PW2 is not installed, go to the installer
- *
- */
-if(!$config->dbName && is_file("./install.php") && strtolower($_SERVER['REQUEST_URI']) == strtolower($rootURL)) {
-	require("./install.php");
-	exit(0);
-}
-
-/*
- * Prepare any PHP ini_set options
- *
- */
-session_name($config->sessionName); 
-ini_set('session.use_cookies', true); 
-ini_set('session.use_only_cookies', 1);
-ini_set("session.gc_maxlifetime", $config->sessionExpireSeconds); 
-ini_set("session.save_path", rtrim($config->paths->sessions, '/')); 
+$config = ProcessWireBootConfig(); 
 
 /*
  * Load and execute ProcessWire

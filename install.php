@@ -107,11 +107,21 @@ class Installer {
 
 		echo "\n<h2>1. Compatibility Check</h2>\n";
 
-		if(is_file("./site/install/install.sql")) $this->li("Found installation profile in ./site/"); 
-			else {
-				$this->err("There is no installation profile present in ./site/. Please unzip the included ./site.zip file, which will create a directory called ./site/. This is the default/basic installation profile. If you prefer, you may download an alternate installation profile at <a href='http://www.processwire.com/download/'>processwire.com/download</a>."); 
-				return;
-			}
+		if(is_file("./site/install/install.sql")) {
+			$this->li("Found installation profile in /site"); 
+
+		} else if(is_file("./site/")) {
+			$this->li("A site already appears to be installed. You do not need to run this intaller to upgrade. Instead, please remove it (/install.php). "); 
+
+		} else if(@rename("./site-default", "./site")) {
+			$this->li("Renamed /site-default => /site"); 
+
+		} else {
+			$this->err("Before continuing, please rename '/site-default' to '/site' This is the default installation profile."); 
+			$this->li("If you prefer, you may download an alternate installation profile at processwire.com/download, which you should unzip to /site");
+			$this->btn("Continue", 1); 
+			return;
+		}
 
 		$v = phpversion();
 		$va = explode(".", phpversion()); 
@@ -390,9 +400,15 @@ class Installer {
 		echo "\n<h2>6. Complete &amp; Secure Your Installation</h2>";
 
 		$this->li("Now that the installer is complete, it is highly recommended that you make ./site/config.php non-writable! This is important for security."); 
-		$this->li("While this installer is now disabled, you should delete it now for security. The file is located in your web root at: ./install.php"); 
+
+		if(@unlink("./install.php")) {
+			$this->li("Deleted this installer (./install.php) for security."); 
+		} else {
+			$this->li("Please delete this installer. The file is located in your web root at: ./install.php"); 
+		}
 		$this->li("There are additional configuration options available in this file that you may want to review: ./site/config.php"); 
-		$this->li("To save space, you should delete this directory (and everything in it): ./site/install/ - it's no longer needed"); 
+
+		$this->li("To save space, you may delete this directory (and everything in it): ./site/install/ - it's no longer needed"); 
 
 		echo "\n<h2>7. Use The Site!</h2>"; 
 
