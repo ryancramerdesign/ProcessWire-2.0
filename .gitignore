@@ -6,10 +6,10 @@ sess_*
 *.swp
 *.swo
 *.sh
-site/config-dev.php
-site/assets/logs
-site/assets/files
-site/assets/sessions
-site/assets/cache
+site-default/config-dev.php
+site-default/assets/logs
+site-default/assets/files
+site-default/assets/sessions
+site-default/assets/cache
 site.sky/*
 .htaccess
