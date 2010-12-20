@@ -21,7 +21,7 @@ encounter at http://ryancramer.com/contact/
 REQUIREMENTS
 ---------------------------------------------------------------------------
 1. A web server running Apache. 
-2. PHP version 5.2.3 or greater.
+2. PHP version 5.2.4 or greater.
 3. MySQL 5.0.15 or greater.
 4. Apache must have mod_rewrite enabled. 
 5. Apache must support .htaccess files. 
@@ -33,18 +33,6 @@ INSTALLATION FROM ZIP
 1. Unzip the ProcessWire installation file to the location where you want it
    installed on your web server. 
 
-2. In the directory where you unzipped ProcessWire, you'll see another file
-   called site.zip:
-
-   If you want to install ProcessWire with the basic site profile, go ahead 
-   and unzip this file. It will create a directory called ./site/ where you 
-   installed ProcessWire. 
-
-   If you want to install ProcessWire with a different site profile, go to
-   http://processwire.com/download/ and download an alternate site profile.
-   Once downloaded, unzip it where your ProcessWire resides, and it will 
-   create a directory called "./site/". 
-
 2. Load the location that you unzipped (or uploaded) the files to in your web
    browser. This will initiate the ProcessWire installer. The installer will
    guide you through the rest of the installation.
@@ -55,14 +43,7 @@ INSTALLATION FROM GIT
 
 1. Git clone ProcessWire to the place where you want to install it. 
 
-2. ProcessWire comes with a basic site profile in the file called site.zip.
-   Unzip this file OR go to processwire.com/download to download a 
-   different site profile.  
-
-   Unzip the site profile to the same directory where you installed 
-   ProcessWire, and it should create a directory called '/site/'
-
-3. Load the location where you installed ProcessWire into your browser. 
+2. Load the location where you installed ProcessWire into your browser. 
    This will initiate the ProcessWire installer. The installer will guide
    you through the rest of the installation.  
 
