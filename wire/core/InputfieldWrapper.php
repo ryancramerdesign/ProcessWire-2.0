@@ -173,6 +173,9 @@ class InputfieldWrapper extends Inputfield {
 
 		foreach($children as $inputfield) {
 
+			$collapsed = $inputfield->getSetting('collapsed'); 
+			if($collapsed == Inputfield::collapsedHidden) continue; 
+
 			$ffOut = $inputfield->render();
 			if(!$ffOut) continue; 
 
@@ -192,7 +195,6 @@ class InputfieldWrapper extends Inputfield {
 
 			if(count($errors)) $ffAttrs['class'] .= " ui-state-error InputfieldStateError"; 
 
-			$collapsed = $inputfield->getSetting('collapsed'); 
 			if($collapsed) {
 				if($inputfield instanceof InputfieldWrapper || $collapsed == Inputfield::collapsedYes || !strlen("{$inputfield->value}") || !$inputfield->value) 
 					$ffAttrs['class'] .= " InputfieldStateCollapsed";
@@ -215,7 +217,10 @@ class InputfieldWrapper extends Inputfield {
 					$for = $inputfield->skipLabel ? '' : " for='" . $inputfield->attr('id') . "'";
 					$label = "\n\t\t<label class='ui-widget-header'$for>" . htmlspecialchars($inputfield->label) . "</label>";
 				}
-				foreach($ffAttrs as $k => $v) $attrs .= " $k='" . htmlspecialchars(trim($v), ENT_QUOTES) . "'";
+				if(!isset($ffAttrs['id'])) $ffAttrs['id'] = 'wrap_' . $inputfield->attr('id'); 
+				foreach($ffAttrs as $k => $v) {
+					$attrs .= " $k='" . htmlspecialchars(trim($v), ENT_QUOTES) . "'";
+				}
 				if($inputfield->className() != 'InputfieldWrapper') $ffOut = "\n\t\t<div class='ui-widget-content'>$ffOut\n\t\t</div>";
 				$out .= "\n\t<li$attrs>$label$ffOut\n\t</li>\n";
 			}
@@ -237,10 +242,16 @@ class InputfieldWrapper extends Inputfield {
 	 */
 	public function ___processInput(WireInputData $input) {
 	
-		// process input on all children	
-		if($this->children) foreach($this->children as $key => $child) {
+		if(!$this->children) return $this; 
+
+		foreach($this->children as $key => $child) {
+
+			// skip over collapsedHidden inputfields, beacuse they were never drawn
+			if($child->collapsed == Inputfield::collapsedHidden) continue; 
+
+			// call the inputfield's processInput method
 			$child->processInput($input); 
-		}	
+		}
 
 		return $this; 
 	}

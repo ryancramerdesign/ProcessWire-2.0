@@ -95,10 +95,12 @@ class PageArray extends WireArray {
 		return $this;
 	}
 
+	/*
 	public function get($key) {
 		if(ctype_digit("$key")) return parent::get($key); 
 		return null;
 	}
+	*/
 
 	/**
 	 * Does this PageArray contain the given index or Page? 

@@ -614,7 +614,6 @@ class ProcessTemplate extends Process {
 				$this->fieldRemoved($field, $this->template); 
 			}
 		}
-
 		$this->template->fieldgroup->save();
 		$this->session->redirect("edit?id={$this->template->id}"); 
 	}

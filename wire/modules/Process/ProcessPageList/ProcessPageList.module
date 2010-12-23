@@ -142,12 +142,13 @@ class ProcessPageList extends Process implements ConfigurableModule {
 		$fields = new InputfieldWrapper();
 		$modules = Wire::getFuel('modules'); 
 
-		$field = $modules->get("InputfieldName"); 
+		$field = $modules->get("InputfieldText"); 
 		$field->attr('name', 'pageLabelField'); 
 		$field->attr('value', !empty($data['pageLabelField']) ? $data['pageLabelField'] : 'title'); 
 		$field->label = "Name of page field to display"; 
 		$field->description = 
 			"Every page in a PageList is identified by a label, typically a title or headline field. You may specify which field it should use here. " . 
+			"To specify multiple fields, separate each field name with a space. If the field resolves to an object (like another page), then specify the property with a dot, i.e. anotherpage.title. " . 
 			"Note that if the field you specify resolves to a blank value then ProcessWire will use the page's 'name' field. ";
 		$fields->append($field); 
 
@@ -237,7 +238,36 @@ abstract class ProcessPageListRender extends Wire {
 	 *
 	 */
 	public function ___getPageLabel(Page $page) {
-		return strip_tags($page->get("{$this->pageLabelField}|name")); 
+
+		$value = '';
+
+		if(strpos($this->pageLabelField, ' ')) {
+			$fields = explode(' ', $this->pageLabelField); 
+		} else {
+			$fields = array($this->pageLabelField); 
+		}
+
+
+		foreach($fields as $field) {
+
+			if(strpos($field, ".")) {
+				list($field, $subfield) = explode(".", $field); 
+			} else $subfield = '';
+
+			$v = $page->get($field); 
+
+			if($subfield && is_object($v)) {
+				$v = $v->get($subfield);
+			}
+
+			if($v) $value .= ($value ? ', ' : '') . "$v";
+		}
+
+		if(!$value) $value = $page->get("name"); 
+
+		$value = strip_tags($value); 
+
+		return $value;
 	}
 
 	abstract public function render();

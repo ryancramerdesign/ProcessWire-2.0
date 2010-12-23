@@ -55,6 +55,7 @@ abstract class Inputfield extends WireData implements Module {
 	const collapsedNo = 0; 
 	const collapsedYes = 1; 
 	const collapsedBlank = 2; 
+	const collapsedHidden = 4; 
 
 	/**
 	 * The total number of Inputfield instances, kept as a way of generating unique 'id' attributes
@@ -475,8 +476,9 @@ abstract class Inputfield extends WireData implements Module {
 		$field->attr('name', 'collapsed'); 
 		$field->label = "How should this field be displayed in the editor?";
 		$field->addOption(self::collapsedNo, "Always open"); 
-		$field->addOption(self::collapsedYes, "Always collapsed, requiring a click to open"); 
 		$field->addOption(self::collapsedBlank, "Collapsed only when blank"); 
+		$field->addOption(self::collapsedYes, "Always collapsed, requiring a click to open"); 
+		$field->addOption(self::collapsedHidden, "Hidden, not shown in the editor"); 
 		$field->attr('value', (int) $this->collapsed); 
 		$fields->append($field); 
 

@@ -65,7 +65,7 @@ class MarkupPageArray extends WireData implements Module {
 
 		$out .= $options['listClose']; 
 
-		if(($options['pagerTop'] || $options['pagerBottom']) && $pageArray->getLimit()) {
+		if(($options['pagerTop'] || $options['pagerBottom']) && $pageArray->getTotal() > count($pageArray))  {
 			$pager = $this->modules->get('MarkupPagerNav'); 	
 			$pager->setBaseUrl($this->page->url); 
 			if($pager) {

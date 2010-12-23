@@ -26,18 +26,43 @@ $(document).ready(function() {
 		 *
 		 */
 		var options = {
-			mode: '',		// 'select' or 'actions', currently this is automatically determined based on the element the PageList is attached to
-			limit: 50,		// pagination limit
-			rootPageID: 1, 
-			selectedPageID: 0, 
-			selectStartLabel: 'Change', 
-			selectCancelLabel: 'Cancel',
-			selectSelectLabel: 'Select',
-			showRootPage: true,
-			ajaxURL: config.urls.admin + 'page/list/', 	// URL where page lists are loaded from 	
-			ajaxMoveURL: config.urls.admin + 'page/sort/' 	// URL where Move's should be saved/posted
-		}; 
 
+			// mode: 'select' or 'actions', currently this is automatically determined based on the element the PageList is attached to
+			mode: '',		
+
+			// default number of pages to show before pagination
+			limit: 35,		
+
+			// the page ID that starts the list
+			rootPageID: 0,			 
+
+			// show the page identified by 'rootPageID' ?	
+			showRootPage: true,
+
+			// the page ID currently selected
+			selectedPageID: 0, 
+
+			// show the 'currently selected' page header? (should be false on multi-selection)
+			selectShowPageHeader: true, 
+
+			// the label to click on to change the currently selected page
+			selectStartLabel: 'Change', 
+
+			// the label to click on to cancel selecting a page
+			selectCancelLabel: 'Cancel',
+
+			// the label to click on to select a given page
+			selectSelectLabel: 'Select',
+
+			// href attribute of 'select' link
+			selectSelectHref: '#', 
+	
+			// URL where page lists are loaded from 	
+			ajaxURL: config.urls.admin + 'page/list/', 	
+
+			// URL where page move's should be posted
+			ajaxMoveURL: config.urls.admin + 'page/sort/' 	
+		}; 
 
 		$.extend(options, customOptions);
 
@@ -65,7 +90,7 @@ $(document).ready(function() {
 				} else {
 					options.mode = 'actions'; 
 					$container.append($root); 
-					loadChildren(options.rootPageID, $root, 0, true); 
+					loadChildren(options.rootPageID > 0 ? options.rootPageID : 1, $root, 0, true); 
 				}
 
 			}
@@ -79,11 +104,12 @@ $(document).ready(function() {
 			function setupSelectMode() {
 
 				var $actions = $("<ul></ul>").addClass('PageListActions PageListSelectActions actions'); 
-				var $pageLabel = $("<p></p>").addClass("PageListSelectName").append($loading); 
+				var $pageLabel = $("<p></p>").addClass("PageListSelectName"); 
+				if(options.selectShowPageHeader) $pageLabel.append($loading); 
 
 				var $action = $("<a></a>").addClass("PageListSelectActionToggle").attr('href', '#').text(options.selectStartLabel).click(function() {
 					if($(this).text() == options.selectStartLabel) {
-						loadChildren(options.rootPageID, $root, 0, true); 
+						loadChildren(options.rootPageID > 0 ? options.rootPageID : 1, $root, 0, true); 
 						$(this).text(options.selectCancelLabel); 
 					} else {
 						$root.children(".PageList").slideUp("fast", function() {
@@ -97,10 +123,12 @@ $(document).ready(function() {
 				$actions.append($("<li></li>").append($action)); 
 				$root.append($("<div></div>").addClass('PageListSelectHeader').append($pageLabel).append($actions)); 
 
-				$.getJSON(options.ajaxURL + "?id=" + options.selectedPageID + "&render=JSON&start=0&limit=0", function(data) {
-					var label = options.selectedPageID > 0 ? data.page.label : '';
-					$root.children(".PageListSelectHeader").find(".PageListSelectName").html(label); 
-				}); 
+				if(options.selectShowPageHeader) { 
+					$.getJSON(options.ajaxURL + "?id=" + options.selectedPageID + "&render=JSON&start=0&limit=0", function(data) {
+						var label = options.selectedPageID > 0 ? data.page.label : '';
+						$root.children(".PageListSelectHeader").find(".PageListSelectName").html(label); 
+					}); 
+				}
 			}
 
 			/**
@@ -159,6 +187,7 @@ $(document).ready(function() {
 				var paginationClick = function(e) {
 					var $curList = $(this).parents("ul.PageListPagination");
 					var info = $curList.data('paginationInfo'); 
+					if(!info) return false;
 					var $newList = getPaginationList(id, parseInt($(this).attr('href')) * info.limit, info.limit, info.total);
 					var $loading = $("<li class='PageListLoading'></li>"); 
 					$curList.siblings(".PageList").remove(); // remove any open lists below current
@@ -352,7 +381,7 @@ $(document).ready(function() {
 				if(child.note.length) $li.append($("<span>" + child.note + "</span>").addClass('PageListNote detail')); 	
 				
 				var $actions = $("<ul></ul>").addClass('PageListActions actions'); 
-				var links = [{ name: options.selectSelectLabel, url: '#'}]; 
+				var links = options.rootPageID == child.id ? [] : [{ name: options.selectSelectLabel, url: options.selectSelectHref }]; 
 				if(options.mode == 'actions') links = child.actions; 
 
 				$(links).each(function(n, action) {
@@ -571,6 +600,8 @@ $(document).ready(function() {
 			/**
 			 * Event called when the "select" link is clicked on in select mode
 			 *
+			 * This also triggers a 'pageSelected' event on the attached text input. 
+			 *
 			 * @see setupSelectMode()
 			 *
 			 */
@@ -579,18 +610,31 @@ $(document).ready(function() {
 				var $t = $(this); 
 				var $li = $t.parent('li').parent('ul.PageListActions').parent('.PageListItem'); 
 				var id = $li.data('pageId');
-				var $header = $root.children(".PageListSelectHeader"); 
 				var $a = $li.children(".PageListPage"); 
 				var title = $a.text();
 				var url = $a.attr('title'); 
+				var $header = $root.children(".PageListSelectHeader"); 
 
 				if(id != $container.val()) $container.change().val(id);
-				$header.children(".PageListSelectName").text(title); 
-				$header.find(".PageListSelectActionToggle").click();
-					
-				$container.trigger('pageSelected', { id: id, url: url, title: title }); 	
 
-				return false; 
+				if(options.selectShowPageHeader) { 
+					$header.children(".PageListSelectName").text(title); 
+				}
+				
+				// trigger pageSelected event	
+				$container.trigger('pageSelected', { 
+					id: id, 
+					url: url, 
+					title: title, 
+					a: $a 
+				}); 	
+
+
+				$header.find(".PageListSelectActionToggle").click(); // close the list
+
+				// jump to specified anchor, if provided
+				if(options.selectSelectHref == '#') return false; 
+					return true; 
 			}
 
 			// initialize the plugin

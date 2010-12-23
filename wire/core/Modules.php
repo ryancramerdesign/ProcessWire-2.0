@@ -444,7 +444,10 @@ class Modules extends WireArray {
 	 */
 	public function getModuleConfigData($className) {
 
+		static $configData = array();
+
 		if(is_object($className)) $className = $className->className();
+		if(isset($configData[$className])) return $configData[$className]; 
 		if(!$id = $this->moduleIDs[$className]) return array();
 
 		// if the class doesn't implement ConfigurableModule, then it's not going to have any configData
@@ -454,6 +457,7 @@ class Modules extends WireArray {
 		list($data) = $result->fetch_array(); 
 		if(empty($data)) return array();
 		$data = json_decode($data, true); 
+		$configData[$className] = $data; 
 		$result->free();
 
 		return $data; 	

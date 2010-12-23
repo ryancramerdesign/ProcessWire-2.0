@@ -85,6 +85,9 @@
 	*/
 }
 
+.PageList .PageListStatusSelected a.PageListPage {
+}
+
 .PageList .PageListStatusHidden a.PageListPage {
 	/* alternate color when page has a 'hidden' status? */
 }
