@@ -174,7 +174,7 @@ class InputfieldWrapper extends Inputfield {
 		foreach($children as $inputfield) {
 
 			$collapsed = $inputfield->getSetting('collapsed'); 
-			if($collapsed == Inputfield::collapsedHidden) continue; 
+			if($collapsed === Inputfield::collapsedHidden) continue; 
 
 			$ffOut = $inputfield->render();
 			if(!$ffOut) continue; 
@@ -196,7 +196,7 @@ class InputfieldWrapper extends Inputfield {
 			if(count($errors)) $ffAttrs['class'] .= " ui-state-error InputfieldStateError"; 
 
 			if($collapsed) {
-				if($inputfield instanceof InputfieldWrapper || $collapsed == Inputfield::collapsedYes || !strlen("{$inputfield->value}") || !$inputfield->value) 
+				if($inputfield instanceof InputfieldWrapper || $collapsed == Inputfield::collapsedYes || $collapsed === true || !strlen("{$inputfield->value}") || !$inputfield->value) 
 					$ffAttrs['class'] .= " InputfieldStateCollapsed";
 			}
 			
