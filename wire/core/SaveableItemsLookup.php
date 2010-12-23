@@ -85,6 +85,7 @@ abstract class WireSaveableItemsLookup extends WireSaveableItems {
 			}
 		}
 
+		if($result) $result->free();
 		$items->setTrackChanges(true); 
 		return $items; 
 	}
@@ -113,6 +114,7 @@ abstract class WireSaveableItemsLookup extends WireSaveableItems {
 		$table = $this->getTable();
 
 		if($item->id) $this->fuel('db')->query("DELETE FROM $lookupTable WHERE {$table}_id={$item->id}"); 
+			
 		$result = parent::___save($item); 
 
 		// if($item->id) foreach($item->get($lookupField) as $key => $value) {

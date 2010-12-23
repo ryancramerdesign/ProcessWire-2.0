@@ -64,6 +64,8 @@ abstract class Wire implements TrackChanges {
 	/**
 	 * A static cache of all hook method/property names for an optimization.
 	 *
+	 * Hooked methods end with '()' while hooked properties don't. 
+	 *
 	 * This does not distinguish which class it was added to or whether it was removed. 
 	 * It is only to gain some speed in our __get and __call methods.
 	 *
@@ -229,7 +231,7 @@ abstract class Wire implements TrackChanges {
 
 		$realMethod = "___$method";
 		if($type == 'method') $result['methodExists'] = method_exists($this, $realMethod);
-		if(!$result['methodExists'] && !self::isHooked($method)) return $result; // exit quickly when we can
+		if(!$result['methodExists'] && !self::isHooked($method . ($type == 'method' ? '()' : ''))) return $result; // exit quickly when we can
 
 		$hooks = $this->getHooks();
 
@@ -305,6 +307,9 @@ abstract class Wire implements TrackChanges {
 	 *
 	 * This is for optimization use. It does not distinguish about class or instance. 
 	 *
+	 * If checking for a hooked method, it should be in the form "method()". 
+	 * If checking for a hooked property, it should be in the form "property". 
+	 *
 	 */
 	static protected function isHooked($method) {
 		return in_array($method, self::$hookMethodCache);
@@ -356,7 +361,7 @@ abstract class Wire implements TrackChanges {
 			'options' => $options, 
 			); 
 
-		self::$hookMethodCache[] = $method; 
+		self::$hookMethodCache[] = $options['type'] == 'method' ? "$method()" : "$method"; 
 
 		ksort($hooks); // sort by priority
 		return $id;

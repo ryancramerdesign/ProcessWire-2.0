@@ -230,6 +230,7 @@ class Pages extends Wire {
 					list($tpl_id) = $result->fetch_row();
 					$template = $this->fuel('templates')->get($tpl_id); 
 					if($template) $fields = $template->fieldgroup; 
+					$result->free();
 				}
 			}
 
@@ -275,6 +276,7 @@ class Pages extends Wire {
 				$loaded[$page->id] = $page; 
 				$this->cache($page); 
 			}
+			$result->free();
 		}
 
 		$pages->import($loaded); 
@@ -385,6 +387,7 @@ class Pages extends Wire {
 			// check if entries aren't already present perhaps due to outside manipulation or an older version
 			$result = $this->db->query("SELECT COUNT(*) FROM pages_parents WHERE parents_id={$page->id}"); 
 			list($n) = $result->fetch_array();
+			$result->free();
 			// if entries aren't present, if the parent has changed, or if it's been forced in the API, proceed
 			if($n == 0 || $page->parentPrevious || $page->forceSaveParents === true) {
 				$this->saveParents($page->id, $page->numChildren + ($isNew ? 1 : 0)); 
@@ -441,6 +444,7 @@ class Pages extends Wire {
 		while($row = $result->fetch_array()) {
 			$this->saveParents($row['id'], $row['numChildren']); 	
 		}
+		$result->free();
 
 		return true; 	
 	}
@@ -467,7 +471,9 @@ class Pages extends Wire {
 			while($row = $result->fetch_array()) {
 				$this->savePageStatus($row['id'], $status, true); 
 			}
+			$result->free();
 		}
+		
 	}
 
 	/**

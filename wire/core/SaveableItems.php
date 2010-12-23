@@ -142,6 +142,7 @@ abstract class WireSaveableItems extends Wire implements IteratorAggregate {
 			}
 			$items->add($item); 
 		}
+		$result->free();
 
 		$items->setTrackChanges(true); 
 		return $items; 
@@ -194,8 +195,7 @@ abstract class WireSaveableItems extends Wire implements IteratorAggregate {
 		}
 
 		if($result) $this->resetTrackChanges();
-		
-		return $result;	
+		return $result;
 	}
 
 
@@ -213,6 +213,7 @@ abstract class WireSaveableItems extends Wire implements IteratorAggregate {
 		$table = $this->getTable();
 		$result = $db->query("DELETE FROM `$table` WHERE id=$id LIMIT 1"); 
 		if($result) $item->id = 0; 
+		
 		return $result;	
 	}
 

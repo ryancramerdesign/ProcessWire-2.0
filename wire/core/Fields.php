@@ -222,9 +222,11 @@ class Fields extends WireSaveableItems {
 
 		$result = $this->db->query("DESCRIBE `{$field1->table}`"); 
 		while($row = $result->fetch_assoc()) $schema1[] = $row['Field']; 
+		$result->free();
 
 		$result = $this->db->query("DESCRIBE `{$field2->table}`"); 
 		while($row = $result->fetch_assoc()) $schema2[] = $row['Field']; 
+		$result->free();
 
 		foreach($schema1 as $key => $value) {
 			if(!in_array($value, $schema2)) {

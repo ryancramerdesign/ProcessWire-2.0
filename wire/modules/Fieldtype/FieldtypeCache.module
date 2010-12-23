@@ -106,6 +106,7 @@ class FieldtypeCache extends Fieldtype {
 		$table = $field->getTable(); 
 		$result = $this->db->query("SELECT COUNT(*) FROM `$table`"); 
 		list($num) = $result->fetch_array(); 
+		$result->free();
 		return $num; 
 	}
 

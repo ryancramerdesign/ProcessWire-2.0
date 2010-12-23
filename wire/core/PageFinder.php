@@ -102,6 +102,7 @@ class PageFinder extends Wire {
 			$row['score'] = $score; 
 			$matches[] = $row; 
 		}
+		$result->free();
 
 		if($options['findOne']) {
 			$this->total = count($matches); 
@@ -109,6 +110,7 @@ class PageFinder extends Wire {
 		} else if(count($query->limit)) {
 			$result = $this->db->query("SELECT FOUND_ROWS()"); 	
 			list($this->total) = $result->fetch_array();
+			$result->free();
 		}
 
 		return $matches; 

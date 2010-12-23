@@ -414,6 +414,8 @@ abstract class Fieldtype extends WireData implements Module {
 			$values[] = $value;
 		}
 
+		$result->free();
+
 		if($isMulti && count($values)) $value = $values; 
 
 		return $value; 

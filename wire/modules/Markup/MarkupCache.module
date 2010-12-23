@@ -84,7 +84,6 @@ class MarkupCache extends Wire implements Module {
 	 *
 	 */
 	public function get($uniqueName, $seconds = 3600) {
-		if($uniqueName == 'className') throw new WireException("gotcha"); 
 		$this->cache = new CacheFile($this->path, $uniqueName, $seconds);
 		if(!$this->cache) throw new WireException("Unable to create cache $uniqueName"); 
 		return $this->cache->get();

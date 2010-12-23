@@ -105,6 +105,7 @@ class Modules extends WireArray {
 		if(!count($installed)) {
 			$result = $this->fuel('db')->query("SELECT id, class, flags FROM modules ORDER BY class");
 			while($row = $result->fetch_assoc()) $installed[$row['class']] = $row;
+			$result->free();
 		}
 
 		$dir = new DirectoryIterator($path); 
@@ -453,6 +454,7 @@ class Modules extends WireArray {
 		list($data) = $result->fetch_array(); 
 		if(empty($data)) return array();
 		$data = json_decode($data, true); 
+		$result->free();
 
 		return $data; 	
 	}

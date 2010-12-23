@@ -169,11 +169,16 @@ class Fieldgroups extends WireSaveableItemsLookup {
 					if($field->flags & Field::flagGlobal) throw new WireException("Field '$field' may not be removed from fieldgroup '$this' because it is globally required (Field::flagGlobal)"); 
 					$pages = $this->fuel('pages')->find("templates_id={$template->id}"); 
 					foreach($pages as $page) {
-						$field->type->deletePageField($page, $field); 
-						$page->save($field->name); 
+						try { 
+							$field->type->deletePageField($page, $field); 
+							$page->save($field->name); 
+						} catch(Exception $e) {
+							$this->error($e->getMessage()); 
+						}
 						if($this->config->debug) $this->message("Deleted '{$field->name}' from '{$page->path}'"); 
 					}
 					$item->finishRemove($field); 
+					
 				}
 			}
 		}
