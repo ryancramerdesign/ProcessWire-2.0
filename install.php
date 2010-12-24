@@ -78,10 +78,14 @@ class Installer {
 		preg_match_all('{<tr class="h"><th>(?>(.+?)</th>)<th>(?>(.+?)</th>)</tr>}', $phpinfo, $matches); 
 		foreach($matches[1] as $key => $label) $info[trim(strtolower($label))] = trim(strtolower($matches[2][$key])); 
 
-		if(strpos($info['server_software'], 'apache') === false) {
-			$this->err("Apache web server server software is required. You are running \"$info[server_software]\". Continue at your own risk, ProcessWire is not currently tested with any other server software."); 
+		if(isset($info['server_software'])) {
+			if(strpos($info['server_software'], 'apache') === false) {
+				$this->err("Apache web server server software is required. You are running \"$info[server_software]\". Continue at your own risk, ProcessWire is not currently tested with any other server software."); 
+			} else {
+				$this->li("Server Software: $info[server_software]"); 
+			}
 		} else {
-			$this->li("Server Software: $info[server_software]"); 
+			$this->err("Unable to determine server software. It may be okay to continue, but note that ProcessWire is only developed for Apache at present."); 
 		}
 
 		$tests = array(
