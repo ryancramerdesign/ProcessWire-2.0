@@ -141,7 +141,7 @@ class WireArray extends Wire implements IteratorAggregate, ArrayAccess, Countabl
 			}
 		}
 
-		$key = '';
+		$key = null;
 		if(($key = $this->getItemKey($item)) !== null) {
 			if(isset($this->data[$key])) unset($this->data[$key]); // avoid two copies of the same item, re-add it to the end 
 			$this->data[$key] = $item; 
@@ -198,6 +198,7 @@ class WireArray extends Wire implements IteratorAggregate, ArrayAccess, Countabl
 		return $this; 
 	}
 
+
 	/**
 	 * Returns the value of the item at the given index, or false if not set. 
 	 *
@@ -207,21 +208,24 @@ class WireArray extends Wire implements IteratorAggregate, ArrayAccess, Countabl
 	 * @return int|string|array|object Value of item requested, or null if it doesn't exist. 
 	 */
 	public function get($key) {
+
+		// if an object was provided, get it's key
 		if(is_object($key)) $key = $this->getItemKey($key); 
+
+		// don't allow arrays as keys
 		if(is_array($key)) throw new WireException("WireArray::get cannot accept an array as a key"); 
+
+		// check if the index is set and return it if so
 		if(isset($this->data[$key])) return $this->data[$key]; 
 
+		// check if key contains a selector
 		if(Selectors::stringHasOperator($key)) return $this->findOne($key); 
 
+		// if the WireArray uses numeric keys, then it's okay to
+		// match a 'name' field if the provided key is a string
 		$match = null;
+		if(is_string($key) && $this->usesNumericKeys()) $match = $this->getItemThatMatches('name', $key); 
 
-		// TODO determine if the following part still needs to be here (I think it does)
-		foreach($this->data as $wire) {
-			if($wire->name === $key) {
-				$match = $wire; 
-				break;
-			}
-		}
 		return $match; 
 	}
 
@@ -242,14 +246,52 @@ class WireArray extends Wire implements IteratorAggregate, ArrayAccess, Countabl
 	}
 
 	/**
-	 * Does this WireArray have the given index?
+	 * Return the first item in this WireArray having a property called $key with the value of $value or NULL if not matched.
+	 *
+	 * Used internally by get() and has().
+	 *
+	 * @param string $key Property to match. 
+	 * @param string|int|object $value $value to match.
+	 * @return Wire|null
+	 *
+	 */
+	protected function getItemThatMatches($key, $value) {
+		if(ctype_digit("$key")) return null;
+		$item = null;
+		foreach($this->data as $wire) {
+			if($wire->$key === $value) {
+				$item = $wire; 
+				break;
+			}
+		}
+		return $item; 
+	}
+
+	/**
+	 * Does this WireArray have the given index or match the given selector?
+	 *
+	 * If the WireArray uses numeric keys, then this will also match a wire's "name" field.
 	 * 
-	 * @param int|string $key Key of item to check. 
+	 * @param int|string $key Key of item to check or selector.
 	 * @return bool True if the item exists, false if not. 
 	 */ 
 	public function has($key) {
+
 		if(is_object($key)) $key = $this->getItemKey($key); 
-		return array_key_exists($key, $this->data); 
+
+		if(array_key_exists($key, $this->data)) return true; 
+
+		if(is_string($key)) {
+
+			if(Selectors::stringHasOperator($key)) {
+				$match = $this->findOne($key); 
+
+			} else if($this->usesNumericKeys()) {
+				$match = $this->getItemThatMatches('name', $key); 
+			}
+		} 
+
+		return $match ? true : false; 
 	}
 
 	/**
@@ -461,7 +503,7 @@ class WireArray extends Wire implements IteratorAggregate, ArrayAccess, Countabl
 	}
 	
 	/**
-	 * Returns the first item in the WireArray. 
+	 * Returns the first item in the WireArray or boolean FALSE if empty. 
 	 *
 	 * Note that this resets the internal WireArray pointer, which would affect other active iterations. 
 	 *
@@ -472,7 +514,7 @@ class WireArray extends Wire implements IteratorAggregate, ArrayAccess, Countabl
 	}
 	
 	/**
-	 * Returns the last item in the WireArray.
+	 * Returns the last item in the WireArray or boolean FALSE if empty.
 	 *
 	 * Note that this resets the internal WireArray pointer, which would affect other active iterations. 
 	 * 
@@ -619,15 +661,15 @@ class WireArray extends Wire implements IteratorAggregate, ArrayAccess, Countabl
 		$sort = '';
 		$limit = '';
 
-		foreach($this as $key => $item) {
+		foreach($this->data as $key => $item) {
 
 			foreach($selectors as $selector) {
 
-				if($selector->field == 'sort') {
+				if($selector->field === 'sort') {
 					$sort = $selector->value; 
 					break;
 
-				} else if($selector->field == 'limit') {
+				} else if($selector->field === 'limit') {
 					$limit = (int) $selector->value; 
 					break;
 				}
@@ -635,14 +677,15 @@ class WireArray extends Wire implements IteratorAggregate, ArrayAccess, Countabl
 				$value = $item->{$selector->field}; 
 
 				if($not === $selector->matches("$value")) {
-					$this->remove($key); 
+					unset($this->data[$key]); 
 					break;
 				}	
 			}
+
 		}
 
 		if($sort) $this->sort($sort); 
-		if($limit) while($this->count() > $limit) $this->pop();
+		if($limit) while($this->count() > $limit) array_pop($this->data); 
 
 		$this->trackChange("filterData:$selectors"); 
 		return $this; 
@@ -693,13 +736,14 @@ class WireArray extends Wire implements IteratorAggregate, ArrayAccess, Countabl
 	public function find($selector) {
 		// non descructive
 		$a = clone $this; 
-		if(!$selector) return $a;
+		if(!strlen($selector)) return $a;
 		$a->filter($selector); 	
+
 		return $a; 
 	}
 
 	/**
-	 * Same as find, but returns a single Page rather than WireArray
+	 * Same as find, but returns a single Page rather than WireArray or FALSE if empty.
 	 *
 	 */
 	public function findOne($selector) {
@@ -921,6 +965,27 @@ class WireArray extends Wire implements IteratorAggregate, ArrayAccess, Countabl
 			
 		}
 		return $prevItem; 
+	}
+
+	/**
+	 * Does this WireArray use numeric keys only? 
+	 *
+	 * We determine this by creating a blank item and seeing what the type is of it's key. 
+	 * 
+	 * @return bool
+	 *
+	 */
+	protected function usesNumericKeys() {
+
+		static $testItem = null;
+		static $usesNumericKeys = null; 
+
+		if(!is_null($usesNumericKeys)) return $usesNumericKeys; 
+		if(is_null($testItem)) $testItem = $this->makeBlankItem(); 
+
+		$key = $this->getItemKey($testItem); 
+		$usesNumericKeys = is_int($key) ? true : false;
+		return $usesNumericKeys; 
 	}
 
 }
