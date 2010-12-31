@@ -48,6 +48,10 @@ class InputfieldsArray extends WireArray {
 		return null; // Inputfield is abstract, so there is nothing to return here
 	}
 
+	public function usesNumericKeys() {
+		return true; 
+	}
+
 }
 
 /**
