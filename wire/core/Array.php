@@ -184,7 +184,22 @@ class WireArray extends Wire implements IteratorAggregate, ArrayAccess, Countabl
 		$this->set($property, $value); 
 	}
 
+	/**
+	 * Ensures that isset() and empty() work for this classes properties. 
+	 *
+	 */
+	public function __isset($key) {
+		return isset($this->data[$key]);
+	}
 
+	/**
+	 * Ensures that unset() works for this classes data. 
+	 *
+	 */
+	public function __unset($key) {
+		$this->remove($key); 
+	}
+	
 	/**
 	 * Like set() but accepts an array or WireArray to set multiple values at once
 	 *
@@ -289,7 +304,8 @@ class WireArray extends Wire implements IteratorAggregate, ArrayAccess, Countabl
 			} else if($this->usesNumericKeys()) {
 				$match = $this->getItemThatMatches('name', $key); 
 			}
-		} 
+
+		} else $match = null;
 
 		return $match ? true : false; 
 	}
@@ -501,6 +517,21 @@ class WireArray extends Wire implements IteratorAggregate, ArrayAccess, Countabl
 	public function index($num) {
 		return $this->slice($num, 1); 
 	}
+
+	/**
+	 * Returns the item at the given index starting from 0, or NULL if it doesn't exist.
+	 *  
+	 * Unlike the index() method, this returns an actual item and not another WireArray. 
+	 * 
+	 * @param int $num Return the nth item in this WireArray. Specify a negative number to count from the end rather than the start.
+	 * @return Wire|null
+	 */
+	public function eq($num) {
+		$num = (int) $num; 
+		$item = array_slice($this->data, $num, 1); 
+		$item = count($item) ? reset($item) : null;
+		return $item; 
+	}
 	
 	/**
 	 * Returns the first item in the WireArray or boolean FALSE if empty. 
@@ -523,6 +554,7 @@ class WireArray extends Wire implements IteratorAggregate, ArrayAccess, Countabl
 	public function last() {
 		return end($this->data); 
 	}
+
 	
 	/**
 	 * Removes the item at the given index from the WireArray (if it exists).
