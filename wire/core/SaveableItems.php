@@ -249,5 +249,9 @@ abstract class WireSaveableItems extends Wire implements IteratorAggregate {
 	public function has($item) {
 		return $this->getAll()->has($item); 
 	}
+
+	public function __isset($key) {
+		return $this->get($key) !== null;	
+	}
 	
 }

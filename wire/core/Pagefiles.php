@@ -52,7 +52,7 @@ class Pagefiles extends WireArray {
 	}
 
 	protected function removeHooks() {
-		if(count($this->hookIDs)) {
+		if(count($this->hookIDs) && $this->page && $this->page->filesManager) {
 			foreach($this->hookIDs as $id) $this->page->filesManager->removeHook($id); 
 		}
 	}

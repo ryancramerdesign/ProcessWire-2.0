@@ -56,6 +56,17 @@ class Fieldtypes extends WireArray {
 	}
 
 	/**
+	 * Does this WireArray use numeric keys only? 
+	 *
+	 * @return bool
+	 *
+	 */
+	protected function usesNumericKeys() {
+		return false;
+	}
+
+
+	/**
 	 * Per the WireArray interface, return a blank copy
 	 *
 	 * Since Fieldtype is abstract, there is nothing but NULL to return here

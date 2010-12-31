@@ -120,6 +120,7 @@ class Page extends WireData implements HasRoles {
 	 * Is this Page finished loading from the DB (i.e. Pages::getById)?
 	 *
 	 * When false, it is assumed that any values set need to be woken up. 
+	 * When false, it also assumes that built-in properties (like name) don't need to be sanitized. 
 	 *
 	 * Note: must be kept in the 'true' state. Pages::getById sets it to false before populating data and then back to true when done.
 	 *
@@ -250,8 +251,11 @@ class Page extends WireData implements HasRoles {
 				$this->settings[$key] = (int) $value; 
 				break;
 			case 'name':
-				$value = $this->fuel('sanitizer')->pageName($value); 
-				if($this->settings[$key] !== $value) $this->trackChange($key); 
+				if($this->isLoaded) {
+					$beautify = empty($this->settings[$key]); 
+					$value = $this->fuel('sanitizer')->pageName($value, $beautify); 
+					if($this->settings[$key] !== $value) $this->trackChange($key); 
+				}
 				$this->settings[$key] = $value; 
 				break;
 			case 'parent': 
@@ -441,7 +445,7 @@ class Page extends WireData implements HasRoles {
 				if(!$value = $this->$key) $value = new NullUser();
 				break;
 			default:
-				if(isset($this->settings[$key])) return $this->settings[$key]; 
+				if($key && isset($this->settings[(string)$key])) return $this->settings[$key]; 
 
 				if(($value = $this->getFieldFirstValue($key)) === null) {
 					if(($value = $this->getFieldValue($key)) === null) {
@@ -1137,6 +1141,15 @@ class Page extends WireData implements HasRoles {
 		}
 		if($this->filesManager) $this->filesManager->uncache(); 
 		$this->filesManager = null;
+	}
+
+	/**
+	 * Ensures that isset() and empty() work for this classes properties. 
+	 *
+	 */
+	public function __isset($key) {
+		if(isset($this->settings[$key])) return true; 
+		return parent::__isset($key); 
 	}
 
 }

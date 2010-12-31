@@ -149,6 +149,22 @@ class WireData extends Wire implements IteratorAggregate {
 	public function has($key) {
 		return ($this->get($key) !== null); 
 	}
+
+	/**
+	 * Ensures that isset() and empty() work for this classes properties. 
+	 *
+	 */
+	public function __isset($key) {
+		return isset($this->data[$key]);
+	}
+
+	/**
+	 * Ensures that unset() works for this classes data. 
+	 *
+	 */
+	public function __unset($key) {
+		$this->remove($key); 
+	}
 	
 }
 
