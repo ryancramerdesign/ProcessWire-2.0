@@ -100,10 +100,12 @@ class InputfieldPageListSelectMultiple extends Inputfield implements InputfieldH
 
 		parent::___processInput($input); 
 
-		$value = trim(reset($this->value)); 
+		$value = $this->attr('value');	
+		if(is_array($value)) $value = reset($value); 
+		$value = trim($value); 
 
 		if(strpos($value, ",") !== false) $value = explode(",", $value); 
-			else if($value) $value[] = $value;
+			else if($value) $value = array($value);
 			else $value = array();
 
 		foreach($value as $k => $v) {
