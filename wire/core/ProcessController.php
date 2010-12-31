@@ -163,10 +163,8 @@ class ProcessController extends Wire {
 
 		if(!$method = $this->processMethodName) {
 			$method = self::defaultProcessMethodName; 
-			if($this->page) {
-				// urlSegment as given by ProcessPageView 
-				if($this->page->urlSegment) $method .= ucfirst($this->page->urlSegment); 
-			}
+			// urlSegment as given by ProcessPageView 
+			if($this->input->urlSegment1) $method .= ucfirst($this->input->urlSegment1); 
 		}
 
 		$hookedMethod = "___$method";

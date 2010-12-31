@@ -22,6 +22,12 @@ class CacheFile {
 	const cacheFileExtension = ".cache";
 	const globalExpireFilename = "lastgood";
 
+	/**
+	 * Max secondaryID cache files that will be allowed in a directory before it starts removing them. 
+	 *
+	 */
+	const maxCacheFiles = 999;
+
 	protected $path; 
 	protected $primaryID = '';
 	protected $secondaryID = '';
@@ -73,7 +79,7 @@ class CacheFile {
 	 */
 	public function setSecondaryID($id) {
 		if(!ctype_alnum("$id")) {
-			$id = preg_replace('/[^-_a-zA-Z0-9]/', '_', $id); 
+			$id = preg_replace('/[^-+_a-zA-Z0-9]/', '_', $id); 
 		}
 		$this->secondaryID = $id; 
 		
@@ -94,6 +100,10 @@ class CacheFile {
 		return $filename; 
 	}
 
+	/**
+	 * Does the cache file exist?
+	 *
+	 */
 	public function exists() {
 		$filename = $this->buildFilename(); 	
 		return is_file($filename); 
@@ -106,9 +116,8 @@ class CacheFile {
 	public function get() {
 
 		$filename = $this->buildFilename();
-		if(!$mtime = @filemtime($filename)) return false;
-		if(($mtime + $this->cacheTimeSeconds < time()) || ($this->globalExpireTime && $mtime < $this->globalExpireTime)) {
-			$this->removeFilename($filename);
+		if($this->isCacheFile($filename) && $this->isCacheFileExpired($filename)) {
+			$this->removeFilename($filename); 
 			return false;
 		}
 
@@ -117,11 +126,52 @@ class CacheFile {
 	}
 
 	/**
+	 * Is the given cache filename expired?
+	 *
+	 */
+	protected function isCacheFileExpired($filename) {
+		if(!$mtime = @filemtime($filename)) return false;
+		if(($mtime + $this->cacheTimeSeconds < time()) || ($this->globalExpireTime && $mtime < $this->globalExpireTime)) {
+			return true;
+		}
+		return false;
+	}
+
+	/**
+	 * Is the given filename a cache file?
+	 *
+	 */
+	protected function isCacheFile($filename) {
+		$ext = self::cacheFileExtension; 
+		if(is_file($filename) && substr($filename, -1 * strlen($ext)) == $ext) return true; 
+		return false;
+	}
+
+	/**
 	 * Saves $data to the cache
 	 *
 	 */
 	public function save($data) {
 		$filename = $this->buildFilename();
+
+		if(!is_file($filename)) {
+			$dirname = dirname($filename);
+			$files = glob("$dirname/*.*"); 
+			$numFiles = count($files); 
+			if($numFiles >= self::maxCacheFiles) {
+				// if the cache file doesn't already exist, and there are too many files here
+				// then abort the cache save for security (we don't want to fill up the disk)
+				// also go through and remove any expired files while we are here, to avoid
+				// this limit interrupting more cache saves. 
+				$o = '';
+				foreach($files as $file) {
+					if($this->isCacheFile($file) && $this->isCacheFileExpired($file)) 
+						$this->removeFilename($file);
+				}
+				return false;
+			}
+		}
+
 		$result = file_put_contents($filename, $data); 
 		if($this->chmodFile) chmod($filename, octdec($this->chmodFile));
 		return $result;
@@ -138,7 +188,8 @@ class CacheFile {
 		$dir = new DirectoryIterator($this->path); 
 		foreach($dir as $file) {
 			if($file->isDir() || $file->isDot()) continue; 
-			if(strpos($file->getFilename(), self::cacheFileExtension)) @unlink($file->getPathname()); 
+			//if(strpos($file->getFilename(), self::cacheFileExtension)) @unlink($file->getPathname()); 
+			if($this->isCacheFile($file->getFilename())) @unlink($file->getPathname()); 
 		}
 
 		return @rmdir($this->path); 

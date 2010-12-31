@@ -321,6 +321,7 @@ class ProcessTemplate extends Process {
 		$field->attr('value', $template->cache_time); 
 		$field->collapsed = Inputfield::collapsedBlank;
 		$form->append($field); 
+		if($template->cache_time) $form->collapsed = Inputfield::collapsedNo;
 
 		// --------------------
 
@@ -338,6 +339,7 @@ class ProcessTemplate extends Process {
 		foreach($this->templates as $t) $field->addOption($t->id, $t->name); 
 		$field->attr('value', (int) $template->childrenTemplatesID); 
 		$form->append($field); 
+		if($template->childrenTemplatesID != 0) $form->collapsed = Inputfield::collapsedNo;
 
 		// --------------------
 
@@ -350,27 +352,47 @@ class ProcessTemplate extends Process {
 		
 		$field->description = 
 			"If checked, pages using this template will accept page number URL segments in the form 'page123', where '123' may be any positive number. " . 
-			"For example, a request URL of '/widgets/page3' automatically sets the 'pageNum' property of the '/widgets/' page to be 3.  " . 
-			"This is used for pagination and should only be checked for templates that support pagination. Page numbers start at 1 (not 0). " . 
+			"For example, a request URL of '/widgets/page3' automatically sets the \$input->pageNum to be 3.  " . 
+			"This is used for pagination and should only be enabled for templates that support pagination. " . 
+			"Note that page numbers start at 1 (not 0). " . 
 			"If combined with URL Segments (see next section), then the page number must be the last part of the URL."; 
+		$field->notes = 
+			"Access the current page number from your templates at \$input->pageNum; ";
 		$form->append($field); 
-			
+		if($template->allowPageNum) $form->collapsed = Inputfield::collapsedNo;
+
 		// --------------------
 
-		$field = $this->modules->get('InputfieldText'); 
+		$field = $this->modules->get('InputfieldCheckbox'); 
 		$field->attr('name', 'urlSegments');
-		$field->label = 'URL Segments';
+		$field->label = 'Allow URL Segments?';
 		$field->description = 
 			"This template may optionally serve URL path segments below that of the page(s) using it. " . 
-			"For example, you may want a page with path /path/to/page/ to also process URLs below it like /path/to/page/segment/. " . 
-			"By default, ProcessWire will throw a '404 page not found' error when such a URL is accessed. " . 
-			"But if you want pages using this template to handle such URLs below it, then enter one or more segments below. " . 
-			"Separate multiple segments by a space. Segments may contain lowercase letters, digits, dashes, underscores or periods. " .
-			"Segments may only be one level deep at present (i.e. no slashes). " . 
-			"If you want the template to accept ANY segment, then just enter an asterisk: *. ";
-		$field->notes = "The PHP code to access the current URL segment from your template is: \$page->urlSegment; // this returns a string";
-		$field->attr('value', is_array($template->urlSegments) ? implode(' ', $template->urlSegments) : ''); 
-		$field->collapsed = Inputfield::collapsedBlank;
+			"For example, you may want a page with path /path/to/page/ to also handle requests for " . 
+			"/path/to/page/segment1/ or /path/to/page/segment1/segment2/. By default, ProcessWire " . 
+			"will throw a '404 Page Not Found' error when such a URL is accessed. But if you want " . 
+			"ProcessWire to render the page instead, check the box below. You can then manully check " . 
+			"the URL segments from your template file to respond to them.";
+
+		$field->notes = 
+			"Up to 3 URL segments are supported after the page's URL. These may be any " . 
+			"combination of lowercase ASCII letters (a-z), numbers (0-9), dashes and underscores. " . 
+			"You can access the URL segments from your template API code by referencing the " . 
+			"\$input->urlSegment(n) function or \$input->urlSegment[n] property " . 
+			"(replacing [n] with 1, 2 or 3).\n\nFor example, given the URL /path/to/page/a/b/c/, " . 
+			"where /path/to/page/ is the page's path, and /a/b/c/ are the segments: " . 
+			"\$input->urlSegment1 is \"a\", \$input->urlSegment2 is \"b\", and \$input->urlSegment3 is \"c\". " . 
+			"If your template receives unknown URL segments, a best practice is to " . 
+			"abort the request by throwing a 404 error. " . 
+			"The API code to do this is: throw new PageNotFoundException();";
+
+		$field->attr('value', 1); 
+		if($template->urlSegments) {
+			$field->attr('checked', 'checked'); 
+			$form->collapsed = Inputfield::collapsedNo;
+		} else { 
+			$field->collapsed = Inputfield::collapsedYes;
+		}
 		$form->append($field); 
 
 		// --------------------
@@ -384,6 +406,7 @@ class ProcessTemplate extends Process {
 		$field->attr('value', $template->redirectLogin); 
 		$field->collapsed = Inputfield::collapsedBlank;
 		$form->append($field); 
+		if($template->redirectLogin) $form->collapsed = Inputfield::collapsedNo;
 
 		// --------------------
 
@@ -401,6 +424,7 @@ class ProcessTemplate extends Process {
 			"either HTTP or HTTPS. ";
 		$field->attr('value', (int) $template->https); 
 		$form->append($field); 
+		if($template->https) $form->collapsed = Inputfield::collapsedNo;
 
 		// --------------------
 
@@ -441,9 +465,10 @@ class ProcessTemplate extends Process {
 			$this->template->childrenTemplatesID = (int) $form->get('childrenTemplatesID')->attr('value'); 
 			$this->template->allowPageNum = (int) $form->get('allowPageNum')->attr('value'); 
 			$this->template->redirectLogin = (int) $form->get('redirectLogin')->attr('value'); 
+			$this->template->urlSegments = (int) $form->get('urlSegments')->attr('value');
 			$this->template->https = (int) $form->get('https')->attr('value'); 
 			if(!$this->template->childrenTemplatesID) $this->template->remove("childrenTemplatesID"); 
-			$this->saveUrlSegments(trim($form->get('urlSegments')->attr('value'))); 
+			//$this->saveUrlSegments(trim($form->get('urlSegments')->attr('value'))); 
 			$this->saveFields();
 			$redirectUrl = "edit?id={$this->template->id}";
 		} 
@@ -456,7 +481,8 @@ class ProcessTemplate extends Process {
 	/**
 	 * Postprocess the urlSegments field so it becomes a sanitized array
 	 *
-	 */
+	 * REMOVED: This capability may be added back later.  
+	 *
 	protected function saveUrlSegments($urlSegments) {
 
 		if(!strlen($urlSegments)) {
@@ -478,6 +504,7 @@ class ProcessTemplate extends Process {
 
 		$this->template->urlSegments = $urlSegments; 
 	}
+	 */
 
 	protected function saveFields() {
 

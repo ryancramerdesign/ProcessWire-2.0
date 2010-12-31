@@ -29,6 +29,7 @@
  */
 class WireInputData implements ArrayAccess, IteratorAggregate, Countable {
 
+
 	protected $stripSlashes = false;
 	protected $data = array();
 
@@ -99,6 +100,15 @@ class WireInputData implements ArrayAccess, IteratorAggregate, Countable {
 		$this->data = array();
 	}
 
+	public function __isset($key) {
+		return $this->offsetExists($key); 
+	}
+
+	public function __unset($key) {
+		return $this->offsetUnset($key); 
+	}
+
+
 
 }
 
@@ -112,6 +122,8 @@ class WireInput {
 	protected $postVars = null;
 	protected $cookieVars = null;
 	protected $whitelist = null;
+	protected $urlSegments = array();
+	protected $pageNum = 1; 
 
 	/**
 	 * Retrieve a GET value or all GET values
@@ -184,17 +196,89 @@ class WireInput {
 		return $this->whitelist; 
 	}
 
+	/**
+	 * Retrieve the URL segment with index $num
+	 *
+	 * Note that the index is 1 based (not 0 based)
+	 *
+	 * Returns a blank string if the specified index is not found. 
+	 *
+	 * @param int $num 
+	 * @return string
+	 *
+	 */
+	public function urlSegment($num = 1) {
+		if($num < 1) $num = 1; 
+		return isset($this->urlSegments[$num]) ? $this->urlSegments[$num] : '';
+	}
+
+	/**
+	 * Set a URL segment value 
+	 *
+	 * @param int $num Number of this URL segment (1 based)
+	 * @param string $value 
+	 *
+	 */
+	public function setUrlSegment($num, $value) {
+		$this->urlSegments[(int)$num] = (string) $value; 	
+	}
+
+	/**
+	 * Return the current page number. 
+	 *
+	 * First page number is 1 (not 0). 
+	 *
+	 * @return int
+	 *
+	 */
+	public function pageNum() {
+		return $this->pageNum; 	
+	}
+
+	/**
+	 * Set the current page number. 
+	 *
+	 * Note that the first page should be 1 (not 0).
+	 *
+	 * @param int $num
+	 *
+	 */
+	public function setPageNum($num) {
+		$this->pageNum = (int) $num;	
+	}
+
 	/**	
 	 * Retrieve the get, post, cookie or whitelist vars using a direct reference, i.e. $input->cookie
 	 *
+	 * Can also be used with URL segments, i.e. $input->urlSegment1, $input->urlSegment2, $input->urlSegment3, etc. 
+	 * And can also be used for $input->pageNum.
+	 *
+	 * @param string $key
+	 * @return string|int|null
+	 *
 	 */
 	public function __get($key) {
+
+		if($key == 'pageNum') return $this->pageNum; 
+		if($key == 'urlSegments') return $this->urlSegments; 
+
+		if(strpos($key, 'urlSegment') === 0) {
+			if(strlen($key) > 10) $num = (int) substr($key, 10); 
+				else $num = 1; 
+			return $this->urlSegment($num);
+		}
+
+
 		$value = null;
 		$gpc = array('get', 'post', 'cookie', 'whitelist'); 
 		if(in_array($key, $gpc)) {
 			$value = $this->$key(); 
 		}
 		return $value; 
+	}
+
+	public function __isset($key) {
+		return $this->__get($key) !== null;
 	}
 }
 

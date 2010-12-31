@@ -337,9 +337,9 @@ class PageFinder extends Wire {
 
 			$this->limit = $limit; 
 
-			if(is_null($start) && ($page = $this->fuel('page'))) {
+			if(is_null($start) && ($input = $this->fuel('input'))) {
 				// if not specified in the selector, assume the 'start' property from the default page's pageNum
-				$pageNum = $page->pageNum - 1; // make it zero based for calculation
+				$pageNum = $input->pageNum - 1; // make it zero based for calculation
 				$start = $pageNum * $limit; 
 			}
 

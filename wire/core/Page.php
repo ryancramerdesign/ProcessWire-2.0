@@ -194,10 +194,6 @@ class Page extends WireData implements HasRoles {
 		$this->config = $this->fuel('config'); 
 		$this->templatePrevious = null;
 		$this->parentPrevious = null;
-
-		// view processes may set a urlSegment to tell the page that it was requested with a parameter of sorts
-		// this is used for caching renders. TODO may want to move this from Page to ProcessPageView completely. 
-		parent::set('urlSegment', ''); 
 	}
 
 	/**
@@ -287,9 +283,6 @@ class Page extends WireData implements HasRoles {
 				break;
 			case 'isLoaded': 
 				$this->setIsLoaded($value); 
-				break;
-			case 'urlSegment': 
-				parent::set($key, $this->fuel('sanitizer')->name($value)); 
 				break;
 			case 'pageNum':
 				$this->pageNum = ((int) $value) > 1 ? (int) $value : 1; 
@@ -443,6 +436,9 @@ class Page extends WireData implements HasRoles {
 			case 'modifiedUser':
 			case 'createdUser':
 				if(!$value = $this->$key) $value = new NullUser();
+				break;
+			case 'urlSegment':
+				return $this->input->urlSegment1; // deprecated, but kept for backwards compatibility
 				break;
 			default:
 				if($key && isset($this->settings[(string)$key])) return $this->settings[$key]; 

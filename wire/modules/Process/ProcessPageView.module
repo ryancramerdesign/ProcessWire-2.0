@@ -21,13 +21,15 @@
  * An exception thrown by ProcessPageView when a page is not found (404), and caught internally by the Process.
  *
  */
-class PageNotFoundException extends WireException {}
+class PageNotFoundException extends Wire404Exception {}
 
 /**
  * All page views are arouted through ProcessPageView
  *
  */
 class ProcessPageView extends Process {
+
+	const maxPageNum = 999;
 
 	public static function getModuleInfo() {
 		return array(
@@ -69,7 +71,7 @@ class ProcessPageView extends Process {
 			try {
 				return $page->render();
 
-			} catch(PageNotFoundException $e) {
+			} catch(Wire404Exception $e) {
 				return $this->pageNotFound();
 			}
 
@@ -100,12 +102,13 @@ class ProcessPageView extends Process {
 			return $page; 
 		}
 
-		$cnt = 0;
 		$urlSegments = array();
+		$maxSegments = 4; 
+		$cnt = 0;
 
 		// if the page isn't found, then check if a page one path level before exists
 		// this loop allows for us to have both a urlSegment and a pageNum
-		while((!$page || !$page->id) && $cnt < 2) { 
+		while((!$page || !$page->id) && $cnt < $maxSegments) { 
 			$it = rtrim($it, '/'); 
 			$pos = strrpos($it, '/')+1;
 			$urlSegment = substr($it, $pos);
@@ -118,32 +121,53 @@ class ProcessPageView extends Process {
 		// if we still found no page, then we can abort
 		if(!$page) return null;
 
-		// now go through the urlSegments and populate $page where appropriate
-		foreach($urlSegments as $cnt => $urlSegment) { 
-
-			// check if the last urlSegment is setting a page number
-			if($cnt == 0 && strpos($urlSegment, 'page') === 0) {
-				// meets the requirements for a page number: last portion of URL and starts with 'page'
-				$pageNum = substr($urlSegment, 4); 
-				// now check to see if it also ends with digits
-				if(ctype_digit("$pageNum")) {
-					$page->pageNum = (int) $pageNum; 
-					$urlSegment = '';
-				}
-			} 
-
-			// if there is still a urlSegment, then set it to the page
-			if($urlSegment) $page->urlSegment = $urlSegment; 
-		}
-
-
-		// if there is a urlSegment and it's not allowed then abort
-		 if($page->urlSegment && !$this->hasValidUrlSegment($page)) return null;
-
-		// if there is a page number, and it's not allowed then abort
-		if($page->pageNum > 1 && !$page->template->allowPageNum) return null;
+		// if URL segments and/or page numbers are present and not allowed then abort
+		if(!$this->checkUrlSegments($urlSegments, $page)) return null;
 
 		return $page; 
+	}
+
+	/**
+	 * Identify and populate URL segments and page numbers
+	 *
+	 * @param array $urlSegments URL segments as found in getPage()
+	 * @param Page $page
+	 * @return bool Returns false if URL segments found and aren't allowed
+	 *
+	 */
+	protected function checkUrlSegments(array $urlSegments, Page $page) {
+
+		if(!count($urlSegments)) return true; 
+
+		$lastSegment = reset($urlSegments);
+		$urlSegments = array_reverse($urlSegments); 
+
+		// check if the last urlSegment is setting a page number and that page numbers are allowed
+		if(strpos($lastSegment, 'page') === 0 && strlen($lastSegment) > 4 && $page->template->allowPageNum) {
+			// meets the requirements for a page number: last portion of URL and starts with 'page'
+			$pageNum = substr($lastSegment, 4); 
+			// now check to see if it also ends with digits
+			if(ctype_digit("$pageNum")) {
+				$pageNum = (int) $pageNum; 	
+				if($pageNum > self::maxPageNum) return false; 
+				$page->pageNum = $pageNum; // backwards compatibility
+				$this->input->setPageNum($pageNum); 
+				array_pop($urlSegments); 
+			}
+		} 
+
+		// return false if URL segments aren't allowed with this page template
+		if($page->template != 'admin' && count($urlSegments) && !$page->template->urlSegments) return false; 
+
+		// now set the URL segments to the $input API variable
+		$cnt = 1; 
+		foreach($urlSegments as $urlSegment) {
+			if($cnt == 1) $page->urlSegment = $urlSegment; // backwards compatibility
+			$this->input->setUrlSegment($cnt, $urlSegment);
+			$cnt++;
+		}
+
+		return true; 
 	}
 
 
@@ -186,34 +210,6 @@ class ProcessPageView extends Process {
 			// redirect to HTTPS secure version
 			$this->redirectURL = "https://$url";
 		}
-	}
-
-	/**
-	 * Does the given page contain a valid URL segment as defined by it's template?
-	 *
-	 * @param Page $page	
-	 * @return bool
-	 *
-	 */
-	protected function hasValidUrlSegment($page) {
-
-		if($page->template) {
-			if($page->template == 'admin') return true; // not enforced in admin app, temporarily to avoid upgrade problems
-			$validUrlSegments = $page->template->urlSegments; 
-		} else $validUrlSegments = null;
-
-		if(!is_array($validUrlSegments) || !count($validUrlSegments)) return false; 
-		if(reset($validUrlSegments) == '*') return true; 
-
-		$valid = false; 
-		foreach($validUrlSegments as $urlSegment) {
-			if($page->urlSegment === $urlSegment) {
-				$valid = true; 
-				break;
-			}
-		}
-
-		return $valid;
 	}
 
 	/**

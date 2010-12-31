@@ -73,10 +73,17 @@ class PageRender extends WireData implements Module, ConfigurableModule {
 		if($this->config->chmodDir) $cacheFile->setChmodDir($this->config->chmodDir);
 
 		$secondaryID = '';
-		if($page->urlSegment) $secondaryID .= $this->sanitizer->pageName($page->urlSegment);
-		if($page->pageNum > 1) $secondaryID .= ($secondaryID ? "-" : "") . "page{$page->pageNum}";
+		$pageNum = $this->input->pageNum; 
+		$urlSegments = $this->input->urlSegments; 
 
-		if($secondaryID) $cacheFile->setSecondaryID($secondaryID);
+		if(count($urlSegments)) {
+			foreach($urlSegments as $urlSegment) {
+				$secondaryID .= $this->sanitizer->pageName($urlSegment) . '+';
+			}
+		}
+		if($pageNum > 1) $secondaryID .= "page{$pageNum}";
+
+		if($secondaryID) $cacheFile->setSecondaryID(rtrim($secondaryID, "+"));
 
 		return $cacheFile;
 	}
