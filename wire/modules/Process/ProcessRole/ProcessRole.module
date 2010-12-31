@@ -103,7 +103,7 @@ class ProcessRole extends Process {
 			$field->attr('value', $role->id); 
 			$field->label = 'Delete'; 
 			$field->description = 'Delete this Role?';
-			$field->collapsed = true; 
+			$field->collapsed = Inputfield::collapsedYes; 
 			$form->append($field); 
 		}
 

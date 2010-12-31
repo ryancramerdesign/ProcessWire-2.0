@@ -216,7 +216,7 @@ class ProcessPageEdit extends Process {
 		$wrapper->append($field); 
 		
 		$fieldset = $this->modules->get("InputfieldFieldset"); 
-		$fieldset->collapsed = true; 
+		$fieldset->collapsed = Inputfield::collapsedYes; 
 		$fieldset->label = "Sort Settings";
 		$fieldset->description = '' . 
 			"If you want all current and future children to automatically sort by a specific field, select the field below " . 
@@ -325,7 +325,7 @@ class ProcessPageEdit extends Process {
 
 		$field->label = 'Info';
 		$field->value = $info; 
-		$field->collapsed = true; 
+		$field->collapsed = Inputfield::collapsedYes; 
 		return $field; 
 	}
 

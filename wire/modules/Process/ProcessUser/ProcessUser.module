@@ -130,7 +130,7 @@ class ProcessUser extends Process {
 		$field->attr('name', 'pass'); 
 		if($user->id) {
 			$field->label = 'Change Password';
-			$field->collapsed = true; 
+			$field->collapsed = Inputfield::collapsedYes; 
 			$field->description = "Enter a new password";
 		} else {
 			$field->label = 'Password';
@@ -157,7 +157,7 @@ class ProcessUser extends Process {
 			$field->attr('name', 'delete'); 
 			$field->attr('value', $user->id); 
 			$field->label = 'Delete this user'; 
-			$field->collapsed = true; 
+			$field->collapsed = Inputfield::collapsedYes; 
 			$form->append($field); 
 		}
 

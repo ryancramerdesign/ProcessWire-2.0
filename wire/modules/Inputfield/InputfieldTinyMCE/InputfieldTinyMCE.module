@@ -85,7 +85,7 @@ class InputfieldTinyMCE extends InputfieldTextarea {
 		$wrapper->description = 
 			'The following fields are specific to TinyMCE and details about these options can be found at the TinyMCE web site. ' . 
 			'In general it is best to use the defaults presented here unless you are familiar with TinyMCE configuration.';
-		$wrapper->collapsed = true; 
+		$wrapper->collapsed = Inputfield::collapsedYes; 
 
 		foreach($this->defaults as $key => $unused) {
 			$field = $this->modules->get('InputfieldText'); 

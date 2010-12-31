@@ -68,7 +68,7 @@ class ProcessField extends Process {
 		if($value && $template = $this->templates->get($value)) {
 			$field->label .= ": $template";
 		} else {
-			$field->collapsed = true; 
+			$field->collapsed = Inputfield::collapsedYes; 
 		}
 		$form->append($field); 
 
@@ -83,7 +83,7 @@ class ProcessField extends Process {
 		if($value && $fieldtype = $this->fieldtypes->get($value)) {
 			$field->label .= ": {$fieldtype->shortName}";
 		} else {
-			$field->collapsed = true; 
+			$field->collapsed = Inputfield::collapsedYes; 
 		}
 		$form->append($field); 
 		
@@ -242,7 +242,7 @@ class ProcessField extends Process {
 			$field->label = "Delete Field"; 
 			$field->attr('id+name', "delete"); 
 			$field->attr('value', $this->field->id); 
-			$field->collapsed = true; 
+			$field->collapsed = Inputfield::collapsedYes; 
 			$form->append($field); 
 
 			if($this->field->id && $this->field->numFieldgroups() == 0) {
@@ -273,7 +273,7 @@ class ProcessField extends Process {
 		// Info
 		$field = $this->modules->get('InputfieldMarkup'); 
 		$field->label = 'Info';
-		$field->collapsed = true; 
+		$field->collapsed = Inputfield::collapsedYes; 
 		$fieldgroups = $this->field->getFieldgroups(); 
 		$templates = new TemplatesArray();
 		foreach($fieldgroups as $fieldgroup) $templates->import($fieldgroup->getTemplates()); 

@@ -190,7 +190,7 @@ class ProcessModule extends Process {
 			$field = $this->modules->get("InputfieldCheckbox"); 
 			$field->attr('name', 'uninstall'); 
 			$field->attr('value', $moduleName); 
-			$field->collapsed = true; 
+			$field->collapsed = Inputfield::collapsedYes; 
 			$field->label = "Uninstall";
 			$field->description = "Uninstall this module? After uninstalling, you may remove the modules files from the server if it is not in use by any other modules.";
 			$form->append($field); 

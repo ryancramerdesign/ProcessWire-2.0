@@ -252,7 +252,7 @@ class ProcessTemplate extends Process {
 		$field->label = "Delete Template"; 
 		$field->attr('id+name', "delete"); 
 		$field->attr('value', $template->id); 
-		$field->collapsed = true; 
+		$field->collapsed = Inputfield::collapsedYes; 
 		if($this->numPages > 0) {
 			$field->description = "This template may not be deleted because it is in use by {$this->numPages} pages";
 			$field->attr('disabled', 'disabled'); 
