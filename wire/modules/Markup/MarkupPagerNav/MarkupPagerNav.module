@@ -1,242 +1,136 @@
 <?php
 
-
-class PagerNavItem {
-	const typeCurrent = 'current';
-	const typeFirst = 'first';
-	const typePrevious = 'previous';
-	const typeNext = 'next';
-	const typeLast = 'last';
-	const typeSeparator = 'separator';
-
-	protected $data = array(
-		'label' => '',
-		'pageNum' => 0,
-		'type' => '', // first, previous, next, last, current, or separator
-		); 
-
-	public function __construct($label, $pageNum, $type = '') {
-		$this->data['label'] = $label;
-		$this->data['pageNum'] = $pageNum;
-		$this->data['type'] = $type;
-	}
-
-	public function __get($property) {
-		return isset($this->data[$property]) ? $this->data[$property] : false;
-	}
-
-	public function __set($property, $value) {
-		$this->data[$property] = $value; 
-	}
-}
-
-class PagerNav implements IteratorAggregate {
-	/*
-	USAGE EXAMPLE:
-
-	foreach($pager as $pageLabel => $pageNum) {
-		$class = "action";
-		if($pageNum == $pager->getCurrentPage()) $class .= " on";
-		$out .= "<li><a class='$class' href='$baseUrl$pageNum/'>$pageLabel</a></li>";
-	}
-	*/
-
-	protected $totalPages = 0;
-	protected $currentPage = 0;
-	protected $pager = NULL;
-	protected $numPageLinks = 10;
-	protected $totalItems = 0;
-	protected $firstItem = 0;
-	protected $itemsPerPage = 0;
-	protected $zeroBased = false;
-	protected $labels = array('previous' => 'prev', 'next' => 'next'); 
-	protected $separator = NULL;
-
-	public function __construct($totalItems, $itemsPerPage, $currentPage) {
-
-		// note that the page numbers are zero based.
-		// if you are one based, then subtract one from currentPage before passing in here
-
-		if(!$itemsPerPage) throw new WireException("itemsPerPage must be more than 0"); 
-
-		$this->totalItems = $totalItems; 
-		$this->currentPage = $currentPage-1;
-		$this->itemsPerPage = $itemsPerPage;
-
-		$this->firstItem = $this->currentPage * $this->itemsPerPage;
-
-		/*
-		if($totalItems >= ($itemsPerPage * 2)) {
-			$this->totalPages = floor($this->totalItems / $this->itemsPerPage)-1; 
-		} else {
-			//$this->totalPages = ceil($this->totalItems / $this->itemsPerPage)-1; 
-			$this->totalPages = ceil($this->totalItems / $this->itemsPerPage); 
-		}
-		*/
-		if($this->totalItems > 0) $this->totalPages = ceil($this->totalItems / $this->itemsPerPage)-1; 
-			else $this->totalPages = 0; 
-
-		/*
-		echo 	"totalItems: " . $this->totalItems . "<br />" . 
-			"totalPages: " . $this->totalPages . "<br />" . 	
-			"currentPage: " . $this->currentPage . "<br />" . 
-			"itemsPerPage: " . $this->itemsPerPage . "<br />";
-		*/
-
-		if($this->totalPages && (($this->totalPages * $this->itemsPerPage) >= $this->totalItems)) 
-			$this->totalPages--; // totalPages zero based
-		$this->separator = new PagerNavItem('', 0, PagerNavItem::typeSeparator); 
-	}	
+/**
+ * ProcessWire MarkupPagerNav module
+ *
+ * Provides capability for rendering pagination navigation with PageArrays
+ *
+ * Basic Example usage:
+ * 
+ * $items = $pages->find("id>0, limit=10"); // replace id>0 with your selector
+ * $pager = $modules->get("MarkupPagerNav"); 
+ * echo "<ul>";
+ * foreach($items as $item) echo "<li>{$item->title}</li>";
+ * echo "</ul>";
+ * echo $pager->render($items); // render the pagination navigation
+ *
+ * MarkupPagerNav generates it's own HTML5/XHTML markup. To modify it's markup
+ * or options, specify a second $options array to the render() method. See 
+ * the MarkupPagerNav::$options to see what defaults can be overridden. 
+ *
+ * PLEASE NOTE
+ * 
+ * The MarkupPageArray class uses MarkupPagerNav automatically when 
+ * rendering a PageArray that was retrieved with a "limit=n" selector. 
+ * 
+ * MarkupPageArray also adds a PageArray::renderPager (i.e. $myPages->renderPager()) 
+ * method which is the same as MarkupPagerNav::render() (i.e. $pager->render($items).
+ *
+ * 
+ * ProcessWire 2.x 
+ * Copyright (C) 2011 by Ryan Cramer 
+ * Licensed under GNU/GPL v2, see LICENSE.TXT
+ * 
+ * http://www.processwire.com
+ * http://www.ryancramer.com
+ *
+ */
 
 
-	public function getPager() {
-
-		// returns array($pageLabel => $pageNum, ...)
-
-		if($this->totalItems <= $this->itemsPerPage) return array();
-		if(!is_null($this->pager)) return $this->pager;
-		$this->pager = array();
+require_once(dirname(__FILE__) . '/PagerNav.php'); 
 
 
-		if($this->numPageLinks) {
-			$numPageLinks = $this->numPageLinks-1;
-			//$numHalf = (int) round($numPageLinks / 2); 
-			$numHalf = (int) floor($numPageLinks / 2); 
-			$startPage = $this->currentPage - $numHalf; 
-
-			if($startPage <= 0) {
-				$startPage = 0;
-
-			} else if($startPage > 0) {
-				$numPageLinks--;
-			}
-
-			$endPage = $startPage + $numPageLinks;
-
-			if($endPage > $this->totalPages) {
-				$endPage = $this->totalPages; 
-				$startPage = $endPage - $numPageLinks;
-				if($startPage < 0) $startPage = 0;
-			}		
-
-		} else {
-			$startPage = 0; 
-			$endPage = $this->totalPages; 
-		}
-
-		/*
-		echo 	"numPageLinks=$numPageLinks<br />" . 
-			"numHalf=$numHalf<br />" . 
-			"startPage=$startPage<br />" . 
-			"endPage=$endPage<br />" . 
-			"totalPages={$this->totalPages}<br />" . 
-			"totalItems={$this->totalItems}<br />";
-		*/
-			
-
-		for($n = $startPage; $n <= ($endPage+1); $n++) {
-			$type = $n == ($this->currentPage+1) ? PagerNavItem::typeCurrent : '';
-			if($n) $this->pager[] = new PagerNavItem($n, $n - 1, $type);
-		}
-
-		if($this->currentPage < $this->totalPages) {
-			$useLast = true; 
-			$item = null;
-			$key = null;
-
-			foreach($this->pager as $key => $item) {
-				if($item->pageNum == $this->totalPages) $useLast = false;
-			}
-
-			/*
-			if($item && $item->pageNum == ($this->totalPages-1)) {
-				unset($this->pager[$key]); 
-				$this->pager[] = $this->separator; 
-				$this->pager[] = new PagerNavItem($this->totalPages+1, $this->totalPages); 
-				$useLast = false; 
-			}
-			*/
-
-			if($useLast) {
-				$this->pager[] = $this->separator; 
-				$this->pager[] = new PagerNavItem($this->totalPages+1, $this->totalPages, PagerNavItem::typeLast); 
-			}
-
-			if($this->getLabel('next')) $this->pager[] = new PagerNavItem($this->getLabel('next'), $this->currentPage+1, PagerNavItem::typeNext); 
-		}
-
-		if(count($this->pager) > 1) {
-
-			$firstPageLink = false;
-
-			foreach($this->pager as $key => $item) {
-				// convert from 0-based to 1-based
-				if($item->type != 'separator') $item->pageNum = $item->pageNum+1;
-				if($item->pageNum == 1) $firstPageLink = true; 
-			}
-
-
-			if(!$firstPageLink) {
-
-				// if the first page in pager is page 2, then get rid of it because we're already adding a page 1 (via typeFirst)
-				// and leaving it here would result in 1 ... 2
-				$item = reset($this->pager); 
-				if($item->pageNum == 2) array_shift($this->pager); 
-
-				array_unshift($this->pager, $this->separator); 
-				array_unshift($this->pager, new PagerNavItem(1, 1, PagerNavItem::typeFirst)); // add reference to page 1
-			}
-
-			if($this->currentPage > 0 && $this->getLabel('previous')) {
-				array_unshift($this->pager, new PagerNavItem($this->getLabel('previous'), $this->currentPage, PagerNavItem::typePrevious));
-			}
-
-		} else $this->pager = array(); 
-
-	
-		return $this->pager; 	
-	}
-
-	public function getIterator() { return new ArrayObject($this->getPager()); }
-	public function getFirstItem() { return $this->firstItem; }
-	public function getItemsPerPage() { return $this->itemsPerPage; }
-	public function getCurrentPage() { return $this->currentPage; }
-	public function getTotalPages() { return $this->totalPages+1; }
-	public function getLabel($key) { return isset($this->labels[$key]) ? $this->labels[$key] : ''; }
-	
-	public function setNumPageLinks($numPageLinks) { $this->numPageLinks = $numPageLinks; }
-	public function setZeroBased($zeroBased = true) { $this->zeroBased = $zeroBased; }
-
-	public function setLabels($previous, $next) {
-		$this->labels['previous'] = $previous;
-		$this->labels['next'] = $next;
-	}
-}
-
-
+/**
+ * ProcessWire module that provides pagination for PageArray types
+ *
+ */
 class MarkupPagerNav extends Wire implements Module {
-
-	protected $options = array(
-		'totalItems' => 0,
-		'itemsPerPage' => 10, 
-		'numPageLinks' => 10, 
-		'getVars' => array(), // or leave empty and populate $input->whitelist (preferred)
-		'pageNum' => 1, 
-		'labelNext' => 'Next', 
-		'labelPrev' => 'Prev', 
-		'queryString' => '', 
-		'baseUrl' => '',
-		); 
 
 	public static function getModuleInfo() {
 		return array(
 			'title' => 'Pager (Pagination) Navigation', 
-			'summary' => 'Generates XHTML markup for pagination navigation', 
+			'summary' => 'Generates markup for pagination navigation', 
 			'version' => 100, 
 			'permanent' => false, 
+			'singular' => false, 
+			'autoload' => false, 
 			);
 	}
 
+	/**
+	 * Options to modify the behavior and output of MarkupPagerNav
+	 *
+	 * Many of these are set automatically. 
+	 *
+	 */
+	protected $options = array(
+
+		// number of links that the pagination navigation should have (typically 10) 
+		'numPageLinks' => 10,	
+
+		// get vars that should appear in the pagination, or leave empty and populate $input->whitelist (preferred)
+		'getVars' => array(), 	
+
+		// the baseUrl from which the navigiation item links will start
+		'baseUrl' => '',	
+
+		// the current Page, or leave NULL to autodetect
+		'page' => null, 	
+
+		// List container markup. Place {out} where you want the individual items rendered. 
+		'listMarkup' => "\n<ul class='MarkupPagerNav'>{out}\n</ul>",
+
+		// List item markup. Place {class} for item class (required), and {out} for item content. 
+		'itemMarkup' => "\n\t<li class='{class}'>{out}</li>",
+
+		// Link markup. Place {url} for href attribute, and {out} for label content. 
+		'linkMarkup' => "<a href='{url}'><span>{out}</span></a>", 
+
+		// label used for the 'Next' button
+		'nextItemLabel' => 'Next', 
+
+		// label used for the 'Previous' button
+		'previousItemLabel' => 'Prev', 
+
+		// label used in the seperator item
+		'separatorItemLabel' => '&hellip;', 
+
+		// default classes used for list items, according to the type. 
+		'separatorItemClass' => 'MarkupPagerNavSeparator', 
+		'firstItemClass' => 'MarkupPagerNavFirst', 
+		'nextItemClass' => 'MarkupPagerNavNext', 
+		'previousItemClass' => 'MarkupPagerNavPrevious', 
+		'lastItemClass' => 'MarkupPagerNavLast', 
+		'currentItemClass' => 'MarkupPagerNavOn', 
+
+		/*
+		 * NOTE: The following options are set automatically and should not be provided in your $options,
+	 	 * because anything you specify will get overwritten. 
+		 *
+		 */
+
+		// total number of items to paginate (set automatically)
+		'totalItems' => 0,	
+
+		// number of items to display per page (set automatically) 
+		'itemsPerPage' => 10,	
+
+		// the current page number (1-based, set automatically)
+		'pageNum' => 1,		
+
+		// the queryString used in links (set automatically, based on whitelist or getVars array)
+		'queryString' => '', 	
+
+		); 
+
+
+	/**
+	 * Render the output for the pagination
+	 *
+	 * @param PageArray $items Pages used in the pagination that have had a "limit=n" selector applied when they were loaded. 
+	 * @param array $options Any options to override the defaults. For the defaults see MarkupPagerNav::$options
+	 *
+	 */
 	public function ___render(PageArray $items, $options = array()) {
 
 		$this->totalItems = $items->getTotal();
@@ -246,6 +140,8 @@ class MarkupPagerNav extends Wire implements Module {
 		$this->itemsPerPage = $items->getLimit(); 
 		$this->pageNum = $items->getStart() < $this->itemsPerPage  ? 1 : ceil($items->getStart() / $this->itemsPerPage)+1; 
 
+		if(is_null($this->options['page'])) $this->options['page'] = $this->fuel('page'); 
+
 		if(empty($this->queryString)) {
 			$whitelist = $this->fuel('input')->whitelist->getArray(); 
 			if(empty($this->options['getVars']) && count($whitelist)) $this->setGetVars($whitelist); 
@@ -253,51 +149,68 @@ class MarkupPagerNav extends Wire implements Module {
 		}
 
 		$pagerNav = new PagerNav($this->totalItems, $this->itemsPerPage, $this->pageNum); 
-		$pagerNav->setLabels($this->labelPrev, $this->labelNext); 
+		$pagerNav->setLabels($this->options['previousItemLabel'], $this->options['nextItemLabel']); 
 		$pagerNav->setNumPageLinks($this->numPageLinks); 
 		$pager = $pagerNav->getPager();
 		$out = '';
 	
 		// if allowPageNum is true, then we can use urlSegment style page numbers rather than GET var page numbers	
-		$allowPageNum = $this->fuel('page')->template->allowPageNum; 
+		$allowPageNum = $this->options['page']->template->allowPageNum; 
 
 		foreach($pager as $key => $item) {
-			$class = '';
 
 			if($item->type == 'separator') {
-				$out .= "\n\t" . "<li class='MarkupPagerNavSeparator'>&hellip;</li>"; 
+				$out .= str_replace(
+					array('{class}', '{out}'), 
+					array($this->options['separatorItemClass'], $this->options['separatorItemLabel']), 
+					$this->options['itemMarkup']); 
 				continue; 
 			} 
 
 			$url = ($this->baseUrl ? $this->baseUrl : './');
+
 			if($item->pageNum > 1) {
 				if($allowPageNum) $url .= "page{$item->pageNum}";
 					else $url .= ($this->queryString ? "&" : "?") . "page=" . $item->pageNum;
 			}
+
 			$url .= $this->queryString; 
+			$class = isset($this->options[$item->type . 'ItemClass']) ? $this->options[$item->type . 'ItemClass'] : '';
+			$link = str_replace(array('{url}', '{out}'), array($url, $item->label), $this->options['linkMarkup']); 
+			$out .= str_replace(array('{class}', '{out}'), array($class, $link), $this->options['itemMarkup']); 
 
-			if($item->type == 'current') $class = 'MarkupPagerNavOn';
-				else if($item->type) $class = 'MarkupPagerNav' . ucfirst($item->type); 
-
-			// $class = $item->type == 'current' ? " class='MarkupPagerNavOn'" : '';
-			if($class) $class = " class='$class'";
-
-			$out .= "\n\t<li$class><a href='$url'><span>{$item->label}</span></a></li>";
 		}
 
-		if($out) $out = "\n<ul class='MarkupPagerNav'>$out\n</ul>";	
+		if($out) $out = str_replace('{out}', $out, $this->options['listMarkup']); 
 
 		return $out; 
 	}
 
+	/**
+	 * Retrieve a MarkupPagerNav option as an object property
+	 *
+	 */
 	public function __get($property) {
-		return isset($this->options[$property]) ? $this->options[$property] : false; 
+		if(isset($this->options[$property])) return $this->options[$property]; 
+		return null;
 	}
 
+	/**
+	 * Set a MarkupPagerNav option as an object property
+	 *
+	 */
 	public function __set($property, $value) {
-		$this->options[$property] = $value; 
+		if(isset($this->options[$property])) $this->options[$property] = $value; 
 	}
 
+	/**
+	 * Set the getVars for this MarkupPagerNav
+	 *
+	 * Generates $this->options['queryString'] automatically.
+	 *
+	 * @param array $vars Array of GET vars indexed as ($key => $value)
+	 *
+	 */
 	public function setGetVars(array $vars) { 
 		$this->options['getVars'] = $vars; 
 		$queryString = "?";
@@ -315,43 +228,31 @@ class MarkupPagerNav extends Wire implements Module {
 		$this->queryString = htmlspecialchars(rtrim($queryString, "?&")); 
 	}
 
+	/*
+	 * All the methods below are optional and typically set automatically, or via the $options param. 
+	 *
+	 */
+
 	public function setPageNum($n) { $this->pageNum = $n; }
 	public function setItemsPerPage($n) { $this->itemsPerPage = $n; }
 	public function setTotalItems($n) { $this->totalItems = $n; }
 	public function setNumPageLinks($n) { $this->numPageLinks = $n; }
 	public function setQueryString($s) { $this->queryString = $s; }
-	public function setLabels($next, $prev) { $this->labelNext = $next; $this->labelPrev = $prev; }
 	public function setBaseUrl($url) { $this->baseUrl = $url; }
 
-	/** the following are specific to the Module interface **/
+	public function setLabels($next, $prev) { 
+		$this->options['nextItemLabel'] = $next; 
+		$this->options['previousItemLabel'] = $prev; 
+	}
+
+	/* 
+	 * The following methods are specific to the Module interface 
+ 	 *
+	 */
 
 	public function init() { }	
 	public function ___install() { }
 	public function ___uninstall() { }
 
-	public function isSingular() {
-		return false; 
-	}
-
-	public function isAutoload() {
-		return false; 
-	}
 }
 
-/*
-function renderMarkupPagerNav(HookEvent $event) {
-
-	$pageArray = $event->object; 
-	$arguments = $event->arguments; 
-	$options = array();
-
-	if(isset($arguments[0]) && is_array($arguments[0])) $options = $arguments[0]; 
-
-	$pager = Wire::getFuel('modules')->get('MarkupPagerNav'); 	
-	$event->return = $pager->render($pageArray, $options); 
-	
-}
-
-Wire::addHook("PageArray::renderPager", null, "renderMarkupPagerNav"); 
-
-*/

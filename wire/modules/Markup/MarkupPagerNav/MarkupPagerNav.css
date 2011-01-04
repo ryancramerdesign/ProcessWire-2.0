@@ -1,3 +1,12 @@
+
+/**
+ * MarkupPagerNav default styles
+ *
+ * Copy and paste into your own stylesheet, because this file is not actually used by anything
+ * it is just here for reference. 
+ *
+ */
+
 .MarkupPagerNav {
         list-style: none;
         margin: 0;
@@ -14,12 +23,10 @@
         }
 
                 .MarkupPagerNav li a {
-                        padding: 4px 7px;
                         padding: 6px 10px;
                         margin: 0;
                         text-decoration: none;
                         border: none;
-                        background: #ff9f78;
                         background: #ef868a;
                         color: #fff;
                         font-weight: bold;
