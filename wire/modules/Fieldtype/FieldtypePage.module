@@ -104,6 +104,7 @@ class FieldtypePage extends FieldtypeMulti {
 		if(!is_array($value)) $value = array($value); 
 
 		$pg = false;
+		/*
 		if($field->derefAsPage) {
 			if(count($value)) $pg = $this->fuel('pages')->get((int) reset($value)); 
 			return $pg; 
@@ -112,9 +113,8 @@ class FieldtypePage extends FieldtypeMulti {
 			$pageArray->resetTrackChanges(); 
 			return $pageArray; 
 		}
+		*/
 
-
-		/*
 		foreach($value as $v) {
 			if($pg = $this->fuel('pages')->get((int) $v)) {
 				if($field->derefAsPage) break;
@@ -123,8 +123,8 @@ class FieldtypePage extends FieldtypeMulti {
 		}
 		if($field->derefAsPage) return $pg;
 		$pageArray->resetTrackChanges(); 
+		$pageArray->setTotal(count($pageArray)); 
                 return $pageArray;  
-		*/
         }
 
         /**
