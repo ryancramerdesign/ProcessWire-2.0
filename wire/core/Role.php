@@ -52,6 +52,15 @@ class Role extends WireArray implements Saveable, HasLookupItems {
 	}
 
 	/**
+	 * Per WireArray interface, return a blank permission
+	 *
+	 */
+	public function makeBlankItem() {
+		return new Permission();
+	}
+
+
+	/**
 	 * Per WireArray interface, numeric keys are used
 	 *
 	 */

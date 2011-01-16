@@ -88,7 +88,9 @@ class WireArray extends Wire implements IteratorAggregate, ArrayAccess, Countabl
 	 *
 	 */
 	public function makeBlankItem() {
-		return new Wire();
+		$class = get_class($this); 
+		if($class != 'WireArray') throw new WireException("Class '$class' doesn't yet implement method 'makeBlankItem()' and it needs to."); 
+		return null;
 	}
 
 	/**
@@ -1014,6 +1016,7 @@ class WireArray extends Wire implements IteratorAggregate, ArrayAccess, Countabl
 
 		if(!is_null($usesNumericKeys)) return $usesNumericKeys; 
 		if(is_null($testItem)) $testItem = $this->makeBlankItem(); 
+		if(is_null($testItem)) return true; 
 
 		$key = $this->getItemKey($testItem); 
 		$usesNumericKeys = is_int($key) ? true : false;

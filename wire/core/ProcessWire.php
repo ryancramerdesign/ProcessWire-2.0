@@ -57,7 +57,7 @@ class ProcessWire extends Wire {
 
 		ini_set("date.timezone", $config->timezone);
 
-		if(!$config->templateExtension) $config->templateExtension = 'tpl';
+		if(!$config->templateExtension) $config->templateExtension = 'php';
 		if(!$config->httpHost) {
 			if(isset($_SERVER['HTTP_HOST']) && $host = $_SERVER['HTTP_HOST']) {
 				if(!preg_match('/^[-a-zA-Z0-9.:]+$/D', $host)) $host = '';
@@ -79,12 +79,10 @@ class ProcessWire extends Wire {
 	 */
 	public function load(Config $config) {
 
-		//set_error_handler("ProcessWireErrorHandler");
-	
 		Wire::setFuel('notices', new Notices()); 
 		Wire::setFuel('sanitizer', new Sanitizer()); 
 		Wire::setFuel('db', new Database($config->dbHost, $config->dbUser, $config->dbPass, $config->dbName)); 
-		
+	
 		$modules = new Modules($config->paths->modules, $config->paths->siteModules);
 		$fieldtypes = new Fieldtypes();
 		$fields = new Fields();
