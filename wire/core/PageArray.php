@@ -90,8 +90,10 @@ class PageArray extends WireArray {
 	public function import($pages) {
 		if(is_object($pages) && $pages instanceof Page) $pages = array($pages); 
 		if(!self::iterable($pages)) return $this; 
-		if($pages instanceof PageArray) $this->setTotal($this->getTotal() + $pages->getTotal()); 
 		foreach($pages as $page) $this->add($page); 
+		if($pages instanceof PageArray) {
+			if(count($pages) < $pages->getTotal()) $this->setTotal($this->getTotal() + ($pages->getTotal() - count($pages))); 
+		}
 		return $this;
 	}
 

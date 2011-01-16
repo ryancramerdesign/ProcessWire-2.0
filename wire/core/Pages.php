@@ -194,7 +194,7 @@ class Pages extends Wire {
 	 * @return PageArray
 	 *
 	 */
-	protected function getById($ids, Template $template = null, $parent_id = null) {
+	public function getById($ids, Template $template = null, $parent_id = null) {
 
 		static $instanceID = 0;
 
