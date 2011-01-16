@@ -198,7 +198,7 @@ class PageFinder extends Wire {
 						else $q = new DatabaseQuerySelect();
 
 					//if($subfield == 'data' && in_array($selector->operator, array('=', '!=', '<>')) && $value === $fieldtype->getBlankValue($nullPage, $field)) {
-					if($subfield == 'data' && in_array($selector->operator, array('=', '!=', '<>')) && !strlen($value)) {
+					if($subfield == 'data' && in_array($selector->operator, array('=', '!=', '<>')) && empty($value)) {
 						// handle blank values -- look in table that has no pages_id relation back to pages, using the LEFT JOIN / IS NULL trick
 						$query->leftjoin("$tableAlias ON $tableAlias.pages_id=pages.id"); 
 						$query->where("$tableAlias.pages_id " . ($selector->operator == '=' ? "IS" : "IS NOT") . " NULL"); 
