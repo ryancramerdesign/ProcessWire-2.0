@@ -271,15 +271,17 @@ class ProcessPageEdit extends Process {
 		$wrapper->attr('id', $this->className() . 'Settings'); 
 		$wrapper->attr('title', 'Settings'); 
 
-		// name
-		$field = $this->modules->get('InputfieldPageName');
-		$field->attr('value', $this->page->name); 
-		$field->required = true; 
-		if($this->page->parent) $field->parentPage = $this->page->parent;
-		$wrapper->prepend($field); 
 
-		// parent
 		if($this->page->id > 1) {
+
+			// name
+			$field = $this->modules->get('InputfieldPageName');
+			$field->attr('value', $this->page->name); 
+			$field->required = true; 
+			if($this->page->parent) $field->parentPage = $this->page->parent;
+			$wrapper->prepend($field); 
+
+			// parent
 			$field = $this->modules->get('InputfieldPageListSelect');
 			$field->label = "Parent";
 			$field->attr('id+name', 'parent_id'); 
