@@ -78,7 +78,10 @@ class InputfieldDatetime extends Inputfield {
 		$f->attr('value', 1); 
 		if($this->datepicker) $f->attr('checked', 'checked'); 
 		$f->label = 'Use a date picker?';
-		$f->description = 'If checked, a calendar date picker will appear allowing a date to be selected rather than just entered.';
+		$f->description = 
+			"If checked, a calendar date picker will appear allowing a date to be selected rather than just entered. " . 
+			"Note that the date picker may populate the field in a universal date format different from the one you have chosen, " . 
+			"but it will be converted when the user saves the page."; 
 		$inputfields->append($f);
 
 		$f= $this->modules->get('InputfieldCheckbox');

@@ -5,7 +5,9 @@ jQuery(document).ready(function($) {
 		changeYear: true,
 		showOn: 'button',
 		buttonText: "Choose",
-		showAnim: 'fadeIn'
+		showAnim: 'fadeIn',
+		dateFormat: 'M d, yy'
+		
 		// buttonImage: config.urls.admin_images + 'icons/calendar.gif',
 		// dateFormat: config.date_format
 	});
