@@ -33,7 +33,7 @@ class Pagefile extends WireData {
 	public function __construct(Pagefiles $pagefiles, $filename) {
 
 		$this->pagefiles = $pagefiles; 
-		$this->setFilename($filename); 
+		if(strlen($filename)) $this->setFilename($filename); 
 		$this->set('description', ''); 
 	}
 

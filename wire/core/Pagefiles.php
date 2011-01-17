@@ -107,7 +107,7 @@ class Pagefiles extends WireArray {
 	 *
 	 */
 	public function makeBlankItem() {
-		throw new WireException("You may not use this method, Pagefile instances require params to construct"); 
+		return new Pagefile($this, ''); 
 	}
 
 	/**

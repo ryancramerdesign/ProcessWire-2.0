@@ -291,7 +291,5 @@ class Pageimage extends Pagefile {
 		}
 		return false; 
 	}
-
-	
 }
 

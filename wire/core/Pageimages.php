@@ -39,4 +39,11 @@ class Pageimages extends Pagefiles {
 		return parent::add($item); 
 	}
 
+	/**
+	 * Per the WireArray interface, return a blank Pageimage
+	 *
+	 */
+	public function makeBlankItem() {
+		return new Pageimage($this, ''); 
+	}
 }

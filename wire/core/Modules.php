@@ -56,6 +56,7 @@ class Modules extends WireArray {
 	 *
 	 */
 	public function __construct($path, $path2 = null) {
+		$this->setTrackChanges(false); 
 		$this->load($path); 
 		if($path2 && is_dir($path2)) $this->load($path2);
 	}
@@ -147,10 +148,11 @@ class Modules extends WireArray {
 			}
 			$this->moduleIDs[$basename] = $info['id']; 
 
-			//$module->name = $basename; 
-			$this->add($module); 
+			//$this->add($module); 
+			$this->set($basename, $module); 
 		}
 	}
+
 
 	/**
 	 * Setup entries in config->urls and config->paths for the given module
