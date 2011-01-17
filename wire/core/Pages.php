@@ -608,7 +608,10 @@ class Pages extends Wire {
 		if(!$id) return $this->pageIdCache; 
 		if(!ctype_digit("$id")) $id = str_replace('id=', '', $id); 
 		$id = (int) $id; 
-		return isset($this->pageIdCache[$id]) ? $this->pageIdCache[$id] : null;
+		if(!isset($this->pageIdCache[$id])) return null; 
+		$page = $this->pageIdCache[$id];
+		$page->setOutputFormatting($this->outputFormatting); 
+		return $page; 
 	}
 
 	/**
