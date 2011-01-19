@@ -58,7 +58,7 @@
 				$children->prepend($homepage); 
 		
 				foreach($children as $child) {
-					$class = $child == $page->rootParent ? " class='on'" : '';
+					$class = $child === $page->rootParent ? " class='on'" : '';
 					echo "<li><a$class href='{$child->url}'>{$child->title}</a></li>";
 				}
 
@@ -131,7 +131,7 @@
 					echo "<ul id='subnav' class='nav'>";
 
 					foreach($page->rootParent->children as $child) {
-						$class = $page == $child ? " class='on'" : '';
+						$class = $page === $child ? " class='on'" : '';
 						echo "<li><a$class href='{$child->url}'>{$child->title}</a></li>";	
 					}
 
