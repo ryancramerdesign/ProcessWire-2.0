@@ -352,7 +352,8 @@ abstract class Fieldtype extends WireData implements Module {
 				'primary' => 'PRIMARY KEY (`pages_id`)', 
 				'data' => 'KEY data (`data`)',
 			),
-			'xtra' => '', // any optional statements that should follow after the closing paren (i.e. engine, default charset, etc)
+			// any optional statements that should follow after the closing paren (i.e. engine, default charset, etc)
+			'xtra' => 'ENGINE=MyISAM DEFAULT CHARSET=utf8', 
 		); 
 		return $schema; 
 	}
