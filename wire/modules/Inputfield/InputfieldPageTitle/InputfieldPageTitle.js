@@ -42,7 +42,7 @@ $(document).ready(function() {
 
 	// check if namefield exists, because pages like homepage don't have one and
 	// no need to continue if it already has a value	
-	if($nameField.length || $nameField.val().length) return;
+	if(!$nameField.length || $nameField.val().length) return;
 
 	var $titleField = $(".InputfieldPageTitle input[type=text]"); 
 	var active = true; 
