@@ -111,7 +111,7 @@ class PageRender extends WireData implements Module, ConfigurableModule {
 	 * @return string rendered data
 	 *
 	 */
-	public function renderPage($event) {
+	public function ___renderPage($event) {
 
 		$page = $event->object; 
 		$options = count($event->arguments) ? $event->arguments[0] : array();
