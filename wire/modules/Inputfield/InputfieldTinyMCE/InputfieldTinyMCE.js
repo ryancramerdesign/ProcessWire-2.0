@@ -32,6 +32,7 @@ var InputfieldTinyMCEConfigDefaults = {
 	dialog_type: "modal",
 	content_css: config.InputfieldTinyMCE.url + 'content.css', 
 	remove_linebreaks: false, // required for preelementfix plugin
+	entity_encoding: 'raw', 
 
 	paste_preprocess : function(pl, o) {
 		if(o.content.indexOf('<br') > -1) {
