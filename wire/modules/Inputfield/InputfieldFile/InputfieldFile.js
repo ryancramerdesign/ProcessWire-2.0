@@ -48,6 +48,7 @@ $(document).ready(function() {
 		var maxFiles = parseInt($t.siblings('.InputfieldFileMaxFiles').val()); 
 		var numFiles = $t.parent('.InputfieldFileUpload').siblings('.InputfieldFileList').children('li').size() + $t.siblings('input[type=file]').size() + 1; 
 		if(maxFiles > 0 && numFiles >= maxFiles) return; 
+		if($t.siblings('input[type=file]:empty').length > 0) return;
 		var $i = $t.clone().hide().val(''); 
 		$t.after($i); 	
 		$i.slideDown(); 
