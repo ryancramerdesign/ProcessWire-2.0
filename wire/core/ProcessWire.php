@@ -81,7 +81,12 @@ class ProcessWire extends Wire {
 
 		Wire::setFuel('notices', new Notices()); 
 		Wire::setFuel('sanitizer', new Sanitizer()); 
-		Wire::setFuel('db', new Database($config->dbHost, $config->dbUser, $config->dbPass, $config->dbName)); 
+		if(isset($config->useDbSocket) && !empty($config->useDbSocket)){
+			Wire::setFuel('db', new Database($config->dbHost, $config->dbUser, $config->dbPass, $config->dbName, $config->dbPort, $config->dbSocket));
+		}else{
+			Wire::setFuel('db', new Database($config->dbHost, $config->dbUser, $config->dbPass, $config->dbName));
+		}
+		Wire::fuel('db')->query("SET NAMES 'utf8'");
 	
 		$modules = new Modules($config->paths->modules, $config->paths->siteModules);
 		$fieldtypes = new Fieldtypes();
