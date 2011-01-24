@@ -104,7 +104,8 @@ class FieldtypePage extends FieldtypeMulti {
 		if(!is_array($value)) $value = array($value); 
 
 		$pg = false;
-		/*
+
+		/* LIKELY UPGRADE/STILL TESTING ************************************************************************
 		if($field->derefAsPage) {
 			if(count($value)) $pg = $this->fuel('pages')->get((int) reset($value)); 
 			return $pg; 

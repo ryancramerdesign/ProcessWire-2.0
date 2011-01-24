@@ -46,6 +46,12 @@ class Pages extends Wire {
 	protected $pageIdCache = array();
 
 	/**
+	 * Cached selector strings and the PageArray that was found.
+	 *
+	 */
+	protected $pageSelectorCache = array();
+
+	/**
 	 * Controls the outputFormatting state for pages that are loaded
 	 *
 	 */
@@ -90,7 +96,11 @@ class Pages extends Wire {
 					return $page ? $pageArray->add($page) : $pageArray; 
 				}
 			}
-		}
+
+		} 
+
+		// check if this find has already been executed, and return the cached results if so
+		// if(null !== ($pages = $this->getSelectorCache($selectorString, $options))) return clone $pages; 
 
 		// if a specific parent wasn't requested, then we assume they don't want results with status >= Page::statusUnsearchable
 		// if(strpos($selectorString, 'parent_id') === false) $selectorString .= ", status<" . Page::statusUnsearchable; 
@@ -153,6 +163,7 @@ class Pages extends Wire {
 		$pages->setStart($start); 
 		$pages->setSelectors($selectors); 
 		$pages->setTrackChanges(true);
+		$this->selectorCache($selectorString, $options, $pages); 
 
 		return $pages; 
 		//return $pages->filter($selectors); 
@@ -166,7 +177,6 @@ class Pages extends Wire {
 	 *
 	 */
 	public function ___findOne($selectorString) {
-
 		if($page = $this->getCache($selectorString)) return $page; 
 		$page = $this->find($selectorString, array('findOne' => true))->first();
 		if(!$page) $page = new NullPage();
@@ -627,6 +637,8 @@ class Pages extends Wire {
 	/**
 	 * Remove the given page from the cache. 
 	 *
+	 * Note: does not remove pages from selectorCache. Call uncacheAll to do that. 
+	 *
 	 * @param Page $page
 	 *
 	 */
@@ -651,6 +663,40 @@ class Pages extends Wire {
 			if(!$page->numChildren) $this->uncache($page); 
 		}
 		$this->pageIdCache = array();
+		$this->pageSelectorCache = array();
+	}
+
+	/**
+	 * Cache the given selector string and options with the given PageArray
+	 *
+	 */
+	protected function selectorCache($selector, array $options, PageArray $pages) {
+		return; // STILL TESTING
+		$selector = $this->getSelectorCache($selector, $options, true); 		
+		$this->pageSelectorCache[$selector] = $pages; 
+	}
+
+	/**
+	 * Retrieve any cached page IDs for the given selector and options OR false if none found.
+	 *
+	 * You may specify a third param as TRUE, which will cause this to just return the selector string (with hashed options)
+	 *
+	 * @param string $selector
+	 * @param array $options
+	 * @param bool $returnSelector default false
+	 * @return array|null|string
+	 *
+	 */
+	protected function getSelectorCache($selector, $options, $returnSelector = false) {
+		if(count($options)) {
+			$optionsHash = '';
+			ksort($options);		
+			foreach($options as $key => $value) $optionsHash .= "[$key:$value]";
+			$selector .= "," . $optionsHash;
+		}
+		if($returnSelector) return $selector; 
+		if(isset($this->pageSelectorCache[$selector])) return $this->pageSelectorCache[$selector]; 
+		return null; 
 	}
 
 	/**
