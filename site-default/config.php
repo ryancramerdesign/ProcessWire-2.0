@@ -143,6 +143,20 @@ $config->adminEmail = '';
 $config->userAuthHashType = 'sha1';
 
 /**
+ * Optional DB socket config for sites that need it (for most you should exclude this)
+ *
+ */
+// $config->dbSocket = '';
+
+
+/**
+ * Optional 'set names utf8' for sites that need it (for most you should exclude this)
+ *
+ */ 
+// $config->dbSetNamesUTF8 = true; 
+
+
+/**
  * Installer config data appears below
  *
  */
