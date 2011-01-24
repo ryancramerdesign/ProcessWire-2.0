@@ -81,7 +81,7 @@ class ProcessWire extends Wire {
 
 		Wire::setFuel('notices', new Notices()); 
 		Wire::setFuel('sanitizer', new Sanitizer()); 
-		if(isset($config->useDbSocket) && !empty($config->useDbSocket)){
+		if(isset($config->dbSocket) && !empty($config->dbSocket)){
 			Wire::setFuel('db', new Database($config->dbHost, $config->dbUser, $config->dbPass, $config->dbName, $config->dbPort, $config->dbSocket));
 		}else{
 			Wire::setFuel('db', new Database($config->dbHost, $config->dbUser, $config->dbPass, $config->dbName));
