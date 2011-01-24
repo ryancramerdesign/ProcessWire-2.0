@@ -12,8 +12,8 @@ function titleToUrlName(name) {
 	name = jQuery.trim(name).toLowerCase();  
   
 	// utf8 accented to ascii translation
-	var str1 = ":,àáäâèéëêìíïîòóöôùúüûñçčćďĺľńňŕřšťž";
-	var str2 = "--aaaaeeeeiiiioooouuuuncccdllnnrrstz";
+	var str1 = ":,àáäâèéëêìíïîòóöôùúüûñçčćďĺľńňŕřšťýž";
+	var str2 = "--aaaaeeeeiiiioooouuuuncccdllnnrrstyz";
 
 	// change common accented characters to ascii equivalent
 	for(var cnt=0, n=str1.length; cnt<n; cnt++) {
