@@ -69,7 +69,7 @@ class Session extends Wire implements IteratorAggregate {
 	 * @return bool
 	 *
 	 */
-	protected function isValidSession() {
+	protected function ___isValidSession() {
 
 		$valid = true; 
 		$sessionName = session_name();
@@ -174,7 +174,7 @@ class Session extends Wire implements IteratorAggregate {
 	 * @return bool True if the login was successful, false if not
 	 *
 	 */
-	public function login($name, $pass) {
+	public function ___login($name, $pass) {
 
 		if(!$this->allowLogin($name)) return false; 
 
@@ -221,7 +221,7 @@ class Session extends Wire implements IteratorAggregate {
 	 * @return this
 	 *
 	 */
-	public function logout() {
+	public function ___logout() {
 		$sessionName = session_name();
 		$_SESSION = array();
 		if(isset($_COOKIE[$sessionName])) setcookie($sessionName, '', time()-42000, '/'); 
@@ -240,7 +240,7 @@ class Session extends Wire implements IteratorAggregate {
 	 * Redirect this session to another URL
 	 *
 	 */
-	public function redirect($url, $http301 = true) {
+	public function ___redirect($url, $http301 = true) {
 
 		// if there are notices, then queue them so that they aren't lost
 		$notices = $this->fuel('notices'); 
