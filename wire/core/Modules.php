@@ -309,7 +309,8 @@ class Modules extends WireArray {
 
 		$sql = 	"INSERT INTO modules SET " . 
 			"class='" . $this->fuel('db')->escape_string($class) . "', " . 
-			"flags=$flags ";
+			"flags=$flags, " . 
+			"data='' ";
 
 		$result = $this->fuel('db')->query($sql); 
 		//$module->id = $this->fuel('db')->insert_id; 
