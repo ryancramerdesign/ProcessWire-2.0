@@ -57,5 +57,22 @@ class HookEvent extends WireData {
 		return $s; 	
 	}
 
+	/**
+	 * Retrieve or set a hooked function argument
+	 *
+	 * @param int $n Zero based number of the argument you want to retrieve, where 0 is the first. Omit to return array of all arguments. 
+	 * @param mixed $value Value that you want to set to this argument, or omit to only return the argument.
+	 * @return array|null|mixed 
+	 *
+	 */
+	public function arguments($n = null, $value = null) {
+		if(is_null($n)) return $this->arguments; 
+		$arguments = $this->arguments; 
+		if(is_null($value)) return isset($arguments[$n]) ? $arguments[$n] : null; 
+		$arguments[$n] = $value;
+		$this->set('arguments', $arguments); 
+		return $value; 
+	}
+
 }
 
