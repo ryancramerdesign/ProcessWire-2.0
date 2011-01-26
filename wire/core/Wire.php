@@ -264,6 +264,7 @@ abstract class Wire implements TrackChanges {
 
 				$result['numHooksRun']++;
 
+				if($when == 'before') $arguments = $event->arguments; 
 				if($when == 'after') $result['return'] = $event->return; 
 			}	
 
