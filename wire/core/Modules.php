@@ -48,6 +48,18 @@ class Modules extends WireArray {
 	protected $moduleIDs = array();
 
 	/**
+	 * Path where system modules are stored
+	 *
+	 */
+	protected $modulePath = '';
+
+	/**
+	 * Path where site-specific modules are stored
+	 *
+	 */
+	protected $modulePath2  = '';
+
+	/**
 	 * Construct the Modules
 	 *
 	 * @param string $path Path to modules
@@ -57,8 +69,12 @@ class Modules extends WireArray {
 	 */
 	public function __construct($path, $path2 = null) {
 		$this->setTrackChanges(false); 
+		$this->modulePath = $path; 
 		$this->load($path); 
-		if($path2 && is_dir($path2)) $this->load($path2);
+		if($path2 && is_dir($path2)) {
+			$this->modulePath2 = $path2; 
+			$this->load($path2);
+		}
 	}
 
 	/**
@@ -86,11 +102,16 @@ class Modules extends WireArray {
 	}
 
 	/**
-	 * Initialize all the modules
+	 * Initialize all the modules that are loaded at boot
 	 *
 	 */
 	public function init() {
-		foreach($this as $module) $module->init();
+		foreach($this as $module) {
+			// if the module is configurable, then load it's config data
+			// and set values for each before initializing themodule
+			$this->setModuleConfigData($module); 
+			$module->init();
+		}
 	}
 
 	/**
@@ -99,7 +120,7 @@ class Modules extends WireArray {
 	 * @param string $path 
 	 *
 	 */
-	protected function load($path, $level = 0) {
+	protected function load($path) {
 
 		static $installed = array();
 
@@ -109,8 +130,80 @@ class Modules extends WireArray {
 			$result->free();
 		}
 
-		$dir = new DirectoryIterator($path); 
+		$files = $this->findModuleFiles($path, true); 
 
+		foreach($files as $pathname) {
+
+			$pathname = $path . $pathname;
+			$dirname = dirname($pathname);
+			$filename = basename($pathname); 
+			$basename = basename($filename, '.module'); 
+
+			// if the filename doesn't end with .module, then stop and move onto the next
+			if(!strpos($filename, '.module') || substr($filename, -7) !== '.module') continue; 
+
+			//  if the filename doesn't start with the requested path, then continue
+			if(strpos($pathname, $path) !== 0) continue; 
+
+			// if the file isn't there, it was probably uninstalled, so ignore it
+			if(!is_file($pathname)) continue; 
+
+			// if the module isn't installed, then stop and move on to next
+			if(!array_key_exists($basename, $installed)) {	
+				$this->installable[$basename] = $pathname; 
+				continue; 
+			}
+
+			$info = $installed[$basename]; 
+			$this->setConfigPaths($basename, $dirname); 
+
+			if($info['flags'] & self::flagsAutoload) { 
+				// this is an Autoload mdoule. 
+				// include the module and instantiate it but don't init() it,
+				// because it will be done by Modules::init()
+				include_once($pathname); 
+				$module = new $basename(); 
+
+			} else {
+				// placeholder for a module, which is not yet included and instantiated
+				$module = new ModulePlaceholder(); 
+				$module->setClass($basename); 
+				$module->singular = $info['flags'] & self::flagsSingular; 
+				$module->file = $pathname; 
+			}
+
+			$this->moduleIDs[$basename] = $info['id']; 
+			$this->set($basename, $module); 
+		}
+
+	}
+
+	/**
+	 * Find new module files in the given $path
+	 *
+	 * If $readCache is true, this will perform the find from the cache
+	 *
+	 * @param string $path Path to the modules
+	 * @param bool $readCache Optional. If set to true, then this method will attempt to read modules from the cache. 
+	 * @param int $level For internal recursive use.
+	 * @return array Array of module files
+	 *
+	 */
+	protected function findModuleFiles($path, $readCache = false, $level = 0) {
+
+		static $startPath;
+
+		$config = $this->fuel('config');
+
+		if($level == 0) {
+			$startPath = $path;
+			$cacheFilename = $config->paths->cache . "Modules." . md5($path) . ".cache";
+			if($readCache && is_file($cacheFilename)) return explode("\n", file_get_contents($cacheFilename)); 
+		}
+
+		$files = array();
+		$dir = new DirectoryIterator($path); 
+		
 		foreach($dir as $file) {
 
 			if($file->isDot()) continue; 
@@ -118,39 +211,26 @@ class Modules extends WireArray {
 			$filename = $file->getFilename();
 			$pathname = $file->getPathname();
 
-			if(DIRECTORY_SEPARATOR != '/') $pathname = str_replace(DIRECTORY_SEPARATOR, '/', $pathname); 
-
-			if($file->isDir() && ($level < 1 || is_file("$pathname/$filename.module"))) $this->load($pathname, $level + 1); 
-			if(substr($filename, -7) !== '.module') continue; 
-
-			// $basename = $file->getBasename('.module'); // requires PHP 5.2.2 or newer
-			$basename = basename($filename, '.module'); 
-
-			if(!array_key_exists($basename, $installed)) {	
-				$this->installable[$basename] = $pathname; 
-				continue; 
+			if(DIRECTORY_SEPARATOR != '/') {
+				$pathname = str_replace(DIRECTORY_SEPARATOR, '/', $pathname); 
+				$filename = str_replace(DIRECTORY_SEPARATOR, '/', $filename); 
 			}
 
-			$info = $installed[$basename]; 
-			$this->setConfigPaths($basename, dirname($pathname)); 
-
-			if($info['flags'] & self::flagsAutoload) { 
-				// include the module and instantiate it
-				include_once($pathname); 
-				$module = new $basename(); 
-			} else {
-				// placeholder for a module, which is not yet included and instantiated
-				$module = new ModulePlaceholder(); 
-				//$module->id = $info['id']; 
-				$module->setClass($basename); 
-				$module->singular = $info['flags'] & self::flagsSingular; 
-				$module->file = $pathname; 
+			// if it's a directory with a .module file in it named the same as the dir, then descend into it
+			if($file->isDir() && ($level < 1 || is_file("$pathname/$filename.module"))) {
+				$files = array_merge($files, $this->findModuleFiles($pathname, false, $level + 1));
 			}
-			$this->moduleIDs[$basename] = $info['id']; 
 
-			//$this->add($module); 
-			$this->set($basename, $module); 
+			// if the filename doesn't end with .module, then stop and move onto the next
+			if(!strpos($filename, '.module') || substr($filename, -7) !== '.module') continue; 
+
+			$files[] = str_replace($startPath, '', $pathname); 
 		}
+
+		if($level == 0) @file_put_contents($cacheFilename, implode("\n", $files), LOCK_EX); 
+		if($config->chmodFile) @chmod($cacheFilename, octdec($config->chmodFile));
+
+		return $files;
 	}
 
 
@@ -207,15 +287,11 @@ class Modules extends WireArray {
 			$module = $this->install($key); 
 		}
 
-
-		if($module) { 
+		// skip autoload modules because they have already been initialized in the load() method
+		if($module && !$this->isAutoload($module)) { 
 			// if the module is configurable, then load it's config data
-			// and set values for each before initializing themodule
-			if($module instanceof ConfigurableModule) {
-				$configData = $this->getModuleConfigData($module); 	
-				foreach($configData as $key => $value) $module->$key = $value; 
-			}
-
+			// and set values for each before initializing the module
+			$this->setModuleConfigData($module); 
 			$module->init();
 		}
 
@@ -467,6 +543,28 @@ class Modules extends WireArray {
 	}
 
 	/**
+	 * Populate configuration data to a ConfigurableModule
+	 *
+	 * If the Module has a 'setConfigData' method, it will send the array of data to that. 
+	 * Otherwise it will populate the properties individually. 
+	 *
+	 * @param Module $module
+	 * @param array $data Configuration data (key = value), or omit if you want it to retrieve the config data for you.
+	 * 
+	 */
+	protected function setModuleConfigData(Module $module, $data = null) {
+		if(!$module instanceof ConfigurableModule) return; 
+		if(!is_array($data)) $data = $this->getModuleConfigData($module); 
+		if(method_exists($module, 'setConfigData') || method_exists($module, '___setConfigData')) {
+			$module->setConfigData($data); 
+			return;
+		}
+		foreach($data as $key => $value) {
+			$module->$key = $value; 
+		}
+	}
+
+	/**
 	 * Given a module class name and an array of configuration data, save it for the module
 	 *
 	 * @param string|Module $className
@@ -516,6 +614,16 @@ class Modules extends WireArray {
 		if(method_exists($module, 'isAutoload')) return $module->isAutoload();
 		return false; 
 	}
+
+	/**
+	 * Reset the cache that stores module files by recreating it
+	 *
+	 */
+	public function resetCache() {
+		$this->findModuleFiles($this->modulePath); 
+		if($this->modulePath2) $this->findModuleFiles($this->modulePath2); 
+	}
+
 
 
 }

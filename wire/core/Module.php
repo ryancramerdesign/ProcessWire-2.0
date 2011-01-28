@@ -26,6 +26,9 @@
  * Hint: Make your ConfigurableModule classes inherit from WireData, which already has 
  * the get/set required methods.
  *
+ * You may optionally specify a handler method for configuration data: setConfigData().
+ * See commented function reference in the interface below. 
+ *
  */
 interface ConfigurableModule {
 
@@ -41,6 +44,16 @@ interface ConfigurableModule {
 	public function __get($key);
 
 	public function __set($key, $value); 
+
+	/**
+	 * An optional method you may include in your ConfigurableModule to have ProcessWire 
+	 * send the configuration data to it rather than populating the properties individually. 
+	 *
+	 * @param array $data Array of data in $key => $value format.
+	 * 
+	public function setConfigData(array $data);
+	 *
+	 */
 	 	
 }
 

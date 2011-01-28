@@ -66,6 +66,11 @@ class ProcessModule extends Process {
 			}
 		}
 
+		if(isset($_POST['reset'])) {
+			$this->modules->resetCache();
+			$this->session->redirect("./?reset=1");
+		}
+
 		return $this->renderList();
 	}	
 
@@ -74,7 +79,7 @@ class ProcessModule extends Process {
 	 *
 	 */
 	protected function renderList() {
-
+	
 		$form = $this->modules->get('InputfieldForm');
 		$form->setAttribute('action', './'); 
 		$form->setAttribute('method', 'post'); 
@@ -83,7 +88,8 @@ class ProcessModule extends Process {
 		$section = 'none';
 		$tableHeader = array('Module', 'Version', 'Summary'); 
 		$table = null;
-		$out = "\n<p class='description'>To add more modules, place them in {$this->config->urls->modules} and activate them here.</p>"; 
+		$out = "\n<p class='description'>To add more modules, place them in {$this->config->urls->siteModules} and click the 'check for new modules' button at the bottom of this window. </p>"; 
+		$total = 0;
 
 		foreach($this->modulesArray as $name => $installed) {
 
@@ -121,15 +127,23 @@ class ProcessModule extends Process {
 				);
 
 			$table->row($row); 
+			$total++;
 
 		}
 
 		$out .= $table->render();
 		$form->attr('value', $out); 
-
 		$submit = $this->modules->get('InputfieldSubmit');
-		$submit->setAttribute('value', 'Save Changes'); 
-		$form->append($submit); 
+		$submit->name = 'reset';
+		$submit->setAttribute('value', 'Check for new modules'); 
+		$form->prepend($submit); 
+
+		if($this->session->ModulesTotal && $total > $this->session->ModulesTotal) {
+			$this->message("Found " . ($total - $this->session->ModulesTotal) . " new module(s)"); 
+		} else if($this->input->get->reset) {
+			$this->message("No new modules found"); 
+		}
+		$this->session->ModulesTotal = $total;
 
 		return $form->render(); 
 	}
