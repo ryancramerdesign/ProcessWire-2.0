@@ -189,7 +189,7 @@ class CacheFile {
 		foreach($dir as $file) {
 			if($file->isDir() || $file->isDot()) continue; 
 			//if(strpos($file->getFilename(), self::cacheFileExtension)) @unlink($file->getPathname()); 
-			if($this->isCacheFile($file->getFilename())) @unlink($file->getPathname()); 
+			if($this->isCacheFile($file->getPathname())) @unlink($file->getPathname()); 
 		}
 
 		return @rmdir($this->path); 
