@@ -86,6 +86,9 @@ class Template extends WireData implements Saveable {
 		} else if($key == 'fieldgroup') {
 			$this->setFieldgroup($value); 
 
+		} else if($key == 'filename') {
+			$this->filename = $value; 
+
 		} else {
 			parent::set($key, $value); 
 		}
