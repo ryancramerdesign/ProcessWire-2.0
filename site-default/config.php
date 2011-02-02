@@ -143,6 +143,12 @@ $config->adminEmail = '';
 $config->userAuthHashType = 'sha1';
 
 /**
+ * Prefix to use in page URLs for page numbers, i.e. a prefix of 'page' would use 'page1', 'page2', etc. 
+ *
+ */
+$config->pageNumUrlPrefix = 'page';
+
+/**
  * Optional DB socket config for sites that need it (for most you should exclude this)
  *
  */

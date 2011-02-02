@@ -97,8 +97,12 @@ class ProcessPageView extends Process {
 		$hasTrailingSlash = substr($it, -1) == '/';
 
 		if($page && $page->id) {
-			// trailing slashes are only enforced if there are no urlSegments
-			if(!$hasTrailingSlash) $this->redirectURL = $page->url;
+			// trailing slash vs. non trailing slash, enforced if not homepage 
+			// redirect to proper trailed slash version if incorrect version is present.
+			$s = $page->template->slashUrls;
+			if($page->id > 1 && ((!$hasTrailingSlash && $s !== 0) || ($hasTrailingSlash && $s === 0))) {
+				$this->redirectURL = $page->url;
+			}
 			return $page; 
 		}
 
@@ -141,11 +145,13 @@ class ProcessPageView extends Process {
 
 		$lastSegment = reset($urlSegments);
 		$urlSegments = array_reverse($urlSegments); 
+		$pageNumUrlPrefix = $this->config->pageNumUrlPrefix;
+		if(!$pageNumUrlPrefix) $pageNumUrlPrefix = 'page';
 
 		// check if the last urlSegment is setting a page number and that page numbers are allowed
-		if(strpos($lastSegment, 'page') === 0 && strlen($lastSegment) > 4 && $page->template->allowPageNum) {
+		if(strpos($lastSegment, $pageNumUrlPrefix) === 0 && strlen($lastSegment) > strlen($pageNumUrlPrefix) && $page->template->allowPageNum) {
 			// meets the requirements for a page number: last portion of URL and starts with 'page'
-			$pageNum = substr($lastSegment, 4); 
+			$pageNum = substr($lastSegment, strlen($pageNumUrlPrefix)); 
 			// now check to see if it also ends with digits
 			if(ctype_digit("$pageNum")) {
 				$pageNum = (int) $pageNum; 	

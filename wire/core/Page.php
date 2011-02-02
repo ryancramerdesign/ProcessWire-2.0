@@ -815,7 +815,9 @@ class Page extends WireData implements HasRoles {
 	 *
 	 */
 	public function url() {
-		return rtrim($this->fuel('config')->urls->root, "/") . $this->path; 
+		$url = rtrim($this->fuel('config')->urls->root, "/") . $this->path; 
+		if($this->template->slashUrls === 0 && $this->settings['id'] > 1) $url = rtrim($url, '/'); 
+		return $url;
 	}
 
 	/**

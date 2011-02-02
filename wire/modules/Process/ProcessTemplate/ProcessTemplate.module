@@ -398,6 +398,23 @@ class ProcessTemplate extends Process {
 		// --------------------
 
 		$field = $this->modules->get('InputfieldRadios'); 
+		$field->attr('name', 'slashUrls'); 
+		$field->label = 'Should page URLs end with a slash?';
+		$field->addOption(1, 'Yes (default)'); 
+		if($template->name != 'admin') $field->addOption(0, 'No'); 
+		$field->description = 
+			"If 'Yes', pages using this template will always have URLs that end with a trailing slash '/'. And if the page is loaded from " . 
+			"a URL without the slash, it will be redirected to it. If you select 'No', the non-slashed version will be enforced instead. " . 
+			"Note that this setting does not enforce this behavior on URL segments or page numbers, only actual page URLs. If you don't " . 
+			"have a preference, it is recommended that you leave this set to 'Yes'.";
+		$field->attr('value', $template->slashUrls === 0 ? 0 : 1); // force default setting of 1
+		$field->collapsed = $template->slashUrls === 0 ? Inputfield::collapsedNo : Inputfield::collapsedYes;
+		if($template->slashUrls === 0) $form->collapsed = Inputfield::collapsedNo;
+		$form->append($field); 
+
+		// --------------------
+
+		$field = $this->modules->get('InputfieldRadios'); 
 		$field->attr('id+name', 'redirectLogin');
 		$field->label = 'What to do when user has no access?';
 		$field->description = "If a user attempts to access a page using this template, and doesn't have access to the page, what should it do?"; 
@@ -426,7 +443,6 @@ class ProcessTemplate extends Process {
 		$form->append($field); 
 		if($template->https) $form->collapsed = Inputfield::collapsedNo;
 
-		// --------------------
 
 		return $form; 
 	}
@@ -467,6 +483,7 @@ class ProcessTemplate extends Process {
 			$this->template->redirectLogin = (int) $form->get('redirectLogin')->attr('value'); 
 			$this->template->urlSegments = (int) $form->get('urlSegments')->attr('value');
 			$this->template->https = (int) $form->get('https')->attr('value'); 
+			$this->template->slashUrls = (int) $form->get('slashUrls')->attr('value');
 			if(!$this->template->childrenTemplatesID) $this->template->remove("childrenTemplatesID"); 
 			//$this->saveUrlSegments(trim($form->get('urlSegments')->attr('value'))); 
 			$this->saveFields();

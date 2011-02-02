@@ -156,6 +156,9 @@ class MarkupPagerNav extends Wire implements Module {
 	
 		// if allowPageNum is true, then we can use urlSegment style page numbers rather than GET var page numbers	
 		$allowPageNum = $this->options['page']->template->allowPageNum; 
+		$slashUrls = $this->options['page']->template->slashUrls;
+		$pageNumUrlPrefix = wire('config')->pageNumUrlPrefix; 
+		if(!$pageNumUrlPrefix) $pageNumUrlPrefix = 'page';
 
 		foreach($pager as $key => $item) {
 
@@ -167,11 +170,16 @@ class MarkupPagerNav extends Wire implements Module {
 				continue; 
 			} 
 
-			$url = ($this->baseUrl ? $this->baseUrl : './');
+			$url = $this->baseUrl;
+			if(!$url) $url = $this->options['page']->url;
 
 			if($item->pageNum > 1) {
-				if($allowPageNum) $url .= "page{$item->pageNum}";
-					else $url .= ($this->queryString ? "&" : "?") . "page=" . $item->pageNum;
+				if($allowPageNum) {
+					if($slashUrls === 0) $url .= '/'; // enforce a trailing slash, regardless of slashUrls template setting
+					$url .= "$pageNumUrlPrefix{$item->pageNum}";
+				} else {
+					$url .= ($this->queryString ? "&" : "?") . "$pageNumPrefix=" . $item->pageNum;
+				}
 			}
 
 			$url .= $this->queryString; 
