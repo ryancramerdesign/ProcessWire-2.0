@@ -93,7 +93,7 @@ class Sanitizer extends Wire {
 			$value = iconv("UTF-8", "ASCII//IGNORE", $value); 
 		}
 
-		$value = strtolower($this->nameFilter($value, array('-', '_'), '-')); 
+		$value = strtolower($this->nameFilter($value, array('-', '_', '.'), '-')); 
 
 		if($beautify) {
 			$value = trim($value, '-'); 
