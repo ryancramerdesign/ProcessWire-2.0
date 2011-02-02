@@ -42,7 +42,7 @@ if($page->process) try {
 
 } catch(WirePermissionException $e) {
 
-	if($controller->isAjax()) {
+	if($controller && $controller->isAjax()) {
 		$content = $controller->jsonMessage($e->getMessage(), true); 
 
 	} else if(!$user->isLoggedin()) {
@@ -56,10 +56,10 @@ if($page->process) try {
 	$msg = $e->getMessage(); 
 	if($config->debug) $msg .= "<pre>" . $e->getTraceAsString() . "</pre>";
 	$this->error($msg); 
-	if($controller->isAjax()) $content = $controller->jsonMessage($e->getMessage(), true); 
+	if($controller && $controller->isAjax()) $content = $controller->jsonMessage($e->getMessage(), true); 
 }
 
-if($controller->isAjax()) {
+if($controller && $controller->isAjax()) {
 	if(empty($content) && count($notices)) $content = $controller->jsonMessage($notices->last()->text); 
 	echo $content; 
 } else {
