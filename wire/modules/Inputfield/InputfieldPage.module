@@ -153,6 +153,7 @@ class InputfieldPage extends Inputfield implements ConfigurableModule {
 		$field->label = 'Parent of selectable page(s)';
 		$field->attr('value', $this->parent_id); 
 		$field->description = "Select the parent of the pages that are selectable.";
+		$field->required = false;
 		$inputfields->append($field); 
 
 		$field = $this->modules->get('InputfieldSelect');
@@ -201,6 +202,7 @@ class InputfieldPage extends Inputfield implements ConfigurableModule {
                 }
 		$inputfields->append($field); 
 
+		if(!$this->inputfield) $this->inputfield = 'InputfieldSelect'; 
 		$field = $this->modules->get('InputfieldSelect');
 		$field->setAttribute('name', 'inputfield'); 
 		$field->setAttribute('value', $this->inputfield); 

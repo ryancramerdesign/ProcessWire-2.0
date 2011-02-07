@@ -42,6 +42,9 @@ $(document).ready(function() {
 			// the page ID currently selected
 			selectedPageID: 0, 
 
+			// in 'select' mode, allow no value to be selected (to abort a selected value)
+			selectAllowUnselect: false,
+
 			// show the 'currently selected' page header? (should be false on multi-selection)
 			selectShowPageHeader: true, 
 
@@ -54,8 +57,14 @@ $(document).ready(function() {
 			// the label to click on to select a given page
 			selectSelectLabel: 'Select',
 
+			// the label to click on to unselect a selected page
+			selectUnselectLabel: 'Unselect',
+
 			// href attribute of 'select' link
 			selectSelectHref: '#', 
+
+			// href attribute of 'unselect' link
+			selectUnselectHref: '#',
 	
 			// URL where page lists are loaded from 	
 			ajaxURL: config.urls.admin + 'page/list/', 	
@@ -108,19 +117,24 @@ $(document).ready(function() {
 				if(options.selectShowPageHeader) $pageLabel.append($loading); 
 
 				var $action = $("<a></a>").addClass("PageListSelectActionToggle").attr('href', '#').text(options.selectStartLabel).click(function() {
+
 					if($(this).text() == options.selectStartLabel) {
+
 						loadChildren(options.rootPageID > 0 ? options.rootPageID : 1, $root, 0, true); 
 						$(this).text(options.selectCancelLabel); 
+
 					} else {
 						$root.children(".PageList").slideUp("fast", function() {
 							$(this).remove();
 						}); 
 						$(this).text(options.selectStartLabel); 
+						$(this).parents(".PageListSelectActions").children("li.PageListSelectActionRemove").remove();
 					}
 					return false; 
 				}); 
 
 				$actions.append($("<li></li>").append($action)); 
+
 				$root.append($("<div></div>").addClass('PageListSelectHeader').append($pageLabel).append($actions)); 
 
 				if(options.selectShowPageHeader) { 
@@ -382,12 +396,19 @@ $(document).ready(function() {
 				
 				var $actions = $("<ul></ul>").addClass('PageListActions actions'); 
 				var links = options.rootPageID == child.id ? [] : [{ name: options.selectSelectLabel, url: options.selectSelectHref }]; 
-				if(options.mode == 'actions') links = child.actions; 
+				if(options.mode == 'actions') {
+					links = child.actions; 
+				} else if(options.selectAllowUnselect) {
+					if(child.id == $container.val()) links = [{ name: options.selectUnselectLabel, url: options.selectUnselectHref }]; 
+				}
 
 				$(links).each(function(n, action) {
-					var $a = $("<a></a>").text(action.name)
-						.attr('href', action.url); 
-					$actions.append($("<li></li>").addClass('PageListAction' + action.name).append($a)); 
+					if(action.name == options.selectSelectLabel) actionName = "Select";
+						else if(action.name == options.selectUnselectLabel) actionName = "Select"; 
+						else actionName = action.name;
+
+					var $a = $("<a></a>").text(action.name).attr('href', action.url); 
+					$actions.append($("<li></li>").addClass('PageListAction' + actionName).append($a)); 
 				}); 
 
 				$li.append($actions); 
@@ -615,6 +636,12 @@ $(document).ready(function() {
 				var url = $a.attr('title'); 
 				var $header = $root.children(".PageListSelectHeader"); 
 
+				if($t.text() == options.selectUnselectLabel) {
+					// if unselect link clicked, then blank out the values
+					id = 0; 
+					title = '';
+				}
+
 				if(id != $container.val()) $container.change().val(id);
 
 				if(options.selectShowPageHeader) { 
@@ -637,8 +664,10 @@ $(document).ready(function() {
 					return true; 
 			}
 
+
 			// initialize the plugin
 			init(); 
+
 		}); 
 	};
 })(jQuery); 

@@ -32,6 +32,8 @@ class InputfieldPageListSelect extends Inputfield {
 		$out = '';
 		$selectStartLabel = "Change";
 		$selectCancelLabel = 'Cancel';
+		$selectSelectLabel = 'Select';
+		$selectUnselectLabel = 'Unselect';
 
 		$out .=	"\n<input type='text' " . $this->getAttributesString() . " />";
 
@@ -39,9 +41,13 @@ class InputfieldPageListSelect extends Inputfield {
 			"var t = $('#{$this->id}'); " . 
 			"t.ProcessPageList({ " . 
 				"mode: 'select', " . 
+				"require: false, " . 
 				"rootPageID: {$this->parent_id}, " . 
+				"selectAllowUnselect: true, " . 
 				"selectStartLabel: '$selectStartLabel', " . 
 				"selectShowPageHeader: true, " . 
+				"selectSelectLabel: '$selectSelectLabel', " . 
+				"selectUnselectLabel: '$selectUnselectLabel', " . 
 				"selectCancelLabel: '$selectCancelLabel' " . 
 			"}).hide()" . 
 			"});</script>";
