@@ -128,7 +128,6 @@ $(document).ready(function() {
 							$(this).remove();
 						}); 
 						$(this).text(options.selectStartLabel); 
-						$(this).parents(".PageListSelectActions").children("li.PageListSelectActionRemove").remove();
 					}
 					return false; 
 				}); 

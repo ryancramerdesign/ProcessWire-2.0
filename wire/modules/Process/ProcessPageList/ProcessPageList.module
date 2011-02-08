@@ -208,7 +208,6 @@ abstract class ProcessPageListRender extends Wire {
 		$actions = array();
 		$adminUrl = $this->config->urls->admin; 
 
-
 		if($page->id == $this->config->trashPageID) {
 
 			if($this->user->isSuperuser() && $page->numChildren) $actions[] = array('name' => 'Empty', 'url' => "{$adminUrl}page/trash/"); 

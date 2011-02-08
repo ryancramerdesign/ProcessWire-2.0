@@ -41,7 +41,6 @@ class InputfieldPageListSelect extends Inputfield {
 			"var t = $('#{$this->id}'); " . 
 			"t.ProcessPageList({ " . 
 				"mode: 'select', " . 
-				"require: false, " . 
 				"rootPageID: {$this->parent_id}, " . 
 				"selectAllowUnselect: true, " . 
 				"selectStartLabel: '$selectStartLabel', " . 
