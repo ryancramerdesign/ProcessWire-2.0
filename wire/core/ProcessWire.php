@@ -181,7 +181,7 @@ function ProcessWireShutdown() {
 		$user = wire('user');
 		$userName = $user ? $user->name : 'Unknown User';
 		$page = wire('page'); 
-		$path = $page ? $wire->page->url : '/?/'; 
+		$path = $page ? $page->url : '/?/'; 
 		$line = $error['line'];
 		$file = $error['file'];
 		$message = "$error[message]";

@@ -77,13 +77,13 @@ class Template extends WireData implements Saveable {
 			if($key == 'id') $value = (int) $value; 
 				else if($key == 'name') $value = $this->fuel('sanitizer')->name($value); 
 				else if($key == 'fieldgroups_id') return $this->setFieldgroup($this->getFuel('fieldgroups')->get($value)); 
-				else if($key == 'cache_time') $value = (int) $value; 
+				else if($key == 'cache_time' || $key == 'cacheTime') $value = (int) $value; 
 				else $value = '';
 
 			if($this->settings[$key] != $value) $this->trackChange($key); 
 			$this->settings[$key] = $value; 
 
-		} else if($key == 'fieldgroup') {
+		} else if($key == 'fieldgroup' || $key == 'fields') {
 			$this->setFieldgroup($value); 
 
 		} else if($key == 'filename') {
