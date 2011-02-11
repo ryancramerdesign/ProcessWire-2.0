@@ -112,7 +112,7 @@ class PageArray extends WireArray {
 	 */  
 	public function has($key) {
 
-		if(is_int($key)) return parent::has($key); 
+		if(is_int($key) || is_string($key)) return parent::has($key); 
 
 		$has = false; 
 

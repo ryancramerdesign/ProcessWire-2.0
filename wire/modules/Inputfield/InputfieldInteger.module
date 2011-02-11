@@ -6,16 +6,17 @@ class InputfieldInteger extends Inputfield {
 		return array(
 			'title' => 'Integer',
 			'version' => 100,
-			'summary' => 'Integer or decimal number, optionally limited by min and max values',
+			'summary' => 'Integer (positive or negative)',
 			'permanent' => true, 
 			);
 	}
 
 	public function init() {
 		parent::init();
-		$this->setAttribute('type', 'text'); 
-		$this->set('maxValue', PHP_INT_MAX); 
-		$this->set('minValue', 0); 
+		$this->attr('type', 'text'); 
+		//$this->set('maxValue', PHP_INT_MAX); 
+		//$this->set('minValue', 0); 
+		$this->attr('size', '10');
 	}
 
 	public function ___render() {
@@ -24,10 +25,13 @@ class InputfieldInteger extends Inputfield {
 	}
 
 	protected function sanitizeValue($value) {
+		$value = trim($value);
 		if(!strlen("$value")) return '';
+		$negative = substr($value, 0, 1) === '-';
 		$value = preg_replace('/[^\d]/', '', $value); // remove non digits, like commas, etc.
 		if(!strlen("$value")) return '';
 		$value = (int) $value; 
+		if($negative) $value = -1 * $value;
 		return $value; 
 	}
 
@@ -41,6 +45,7 @@ class InputfieldInteger extends Inputfield {
 			
 			$value = $this->sanitizeValue($value); 
 
+			/* TO ADD BACK LATER
 			if(strlen("$value")) {
 				if(!is_null($this->maxValue) && ((int)$value) > $this->maxValue) {
 					$value = '';
@@ -51,34 +56,11 @@ class InputfieldInteger extends Inputfield {
 					$this->error("Value supplied for field '{$this->name}' is less than the minimum allowed value"); 
 				}
 			}
-			//if($this->name == 'floors' && strlen($value) && "$value" == "0") throw new WireException("hi"); 
-			//$this->message($this->name . ": $value"); 
-
+			*/
 		}
 
 
 		return parent::setAttribute($key, $value); 
 	}
 
-	public function ___getConfigInputfields() {
-		$inputfields = parent::___getConfigInputfields();
-
-		$field = $this->modules->get('InputfieldInteger');
-		$field->setAttribute('name', 'minValue'); 
-		$field->label = 'Minimum Allowed Value';
-		$field->setAttribute('value', $this->minValue); 
-		$field->setAttribute('size', 20); 
-		$field->description = 'The smallest number allowed by this field.'; 
-		$inputfields->append($field);
-
-		$field = $this->modules->get('InputfieldInteger');
-		$field->setAttribute('name', 'maxValue'); 
-		$field->label = 'Maximum Allowed Value';
-		$field->setAttribute('value', $this->maxValue); 
-		$field->setAttribute('size', 20); 
-		$field->description = 'The largest number allowed by this field (may not exceed ' . PHP_INT_MAX . ")"; 
-		$inputfields->append($field);
-
-		return $inputfields; 
-	}
 }

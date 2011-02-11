@@ -181,8 +181,8 @@ class InputfieldFile extends Inputfield {
 		$f = $this->modules->get("InputfieldInteger"); 
 		$f->attr('name', 'descriptionRows'); 
 		$f->attr('value', $this->descriptionRows !== null ? (int) $this->descriptionRows : 1); 
-		$f->minValue = 0; 
-		$f->maxValue = 30; 
+		//$f->minValue = 0; 
+		//$f->maxValue = 30; 
 		$f->label = 'Number of rows for description field?';
 		$f->description = "Enter the number of rows available for the file description field, or enter 0 to not have a description field.";
 		$inputfields->append($f); 

@@ -17,7 +17,7 @@
  *
  */
 
-class FieldtypeFloat extends FieldtypeInteger {
+class FieldtypeFloat extends Fieldtype {
 
 	public static function getModuleInfo() {
 		return array(
@@ -28,17 +28,31 @@ class FieldtypeFloat extends FieldtypeInteger {
 			);
 	}
 
+	public function ___getCompatibleFieldtypes(Field $field) {
+		$fieldtypes = parent::___getCompatibleFieldtypes($field); 
+		foreach($fieldtypes as $type) {
+			if(	!$type instanceof FieldtypeInteger && 
+				!$type instanceof FieldtypeFloat &&
+				$type != 'FieldtypeText') {
+
+				$fieldtypes->remove($type); 
+			}
+		}
+		return $fieldtypes; 
+	}
+
 	public function getBlankValue(Page $page, Field $field) {
 		return ''; 
 	}
 
 	public function sanitizeValue(Page $page, Field $field, $value) {
-		return strlen("$value") ? (float) $value : ''; 
+		return strlen("$value") ? round((float) $value, $field->precision) : '';
 	}
 
 	public function getInputfield(Page $page, Field $field) {
 		$inputfield = $this->modules->get('InputfieldFloat'); 
 		$inputfield->class = $this->className();
+		$inputfield->precision = $field->precision; 
 		return $inputfield; 
 	}
 
@@ -46,6 +60,19 @@ class FieldtypeFloat extends FieldtypeInteger {
 		$schema = parent::getDatabaseSchema($field); 
 		$schema['data'] = 'float NOT NULL';
 		return $schema;
+	}
+
+	public function ___getConfigInputfields(Field $field) {
+		$inputfields = parent::___getConfigInputfields($field);
+
+		$f = $this->modules->get('InputfieldInteger');
+		$f->attr('name', 'precision'); 
+		$f->label = 'Number of decimal digits to round to';
+		$f->attr('value', $field->precision); 
+		$f->attr('size', 8); 
+		$inputfields->append($f);
+
+		return $inputfields; 
 	}
 
 }
