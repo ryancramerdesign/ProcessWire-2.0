@@ -194,12 +194,16 @@ function ProcessWireShutdown() {
 			$logMessage = "$userName:$path:$types[$type]:$message";
 			if($config->adminEmail) @mail($config->adminEmail, 'ProcessWire Error Notification', $logMessage); 
 			$logMessage = str_replace("\n", " ", $logMessage); 
-			$log = new FileLog($config->paths->logs . "errors.txt");
-			$log->save($logMessage); 
+			if($config->paths->logs) {
+				$log = new FileLog($config->paths->logs . "errors.txt");
+				$log->save($logMessage); 
+			}
 		}
 
 		if($debug || !isset($_SERVER['HTTP_HOST']) || ($user && $user->isSuperuser())) {
-			if($debug) $message .= "\n\nThis error message was shown because the site is in DEBUG mode.";
+			// when in debug mode, we can assume the message was already shown, so we just say why.
+			// when not in debug mode, we display the full error message since error_reporting and display_errors are off.
+			if($debug) $message = "This error message was shown because the site is in DEBUG mode.";
 				else $message .= "\n\nThis error message was shown because you are logged in as a Superuser.";
 			if(isset($_SERVER['HTTP_HOST'])) $message = "<p class='WireFatalError'>" . nl2br($message) . "</p>";
 			echo "\n\n$message\n\n";
