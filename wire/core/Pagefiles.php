@@ -72,7 +72,6 @@ class Pagefiles extends WireArray {
 	public function makeNew() {
 		$class = get_class($this); 
 		$newArray = new $class($this->page); 
-		$newArray->import($this); 
 		return $newArray; 
 	}
 
