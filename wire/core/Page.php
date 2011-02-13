@@ -389,6 +389,8 @@ class Page extends WireData implements HasRoles {
 			case 'parents':
 			case 'rootParent':
 			case 'siblings':
+			case 'next':
+			case 'prev':
 			case 'roles':
 			case 'url':
 			case 'path':
@@ -711,6 +713,44 @@ class Page extends WireData implements HasRoles {
 	}
 
 	/**
+	 * Return the next sibling page
+	 *
+	 * If given a PageArray of siblings (containing the current) it will return the next sibling relative to the provided PageArray.
+	 *
+	 * Be careful with this function when the page has a lot of siblings. It has to load them all, so this function is best
+	 * avoided at large scale, unless you provide your own already-reduced siblings list (like from pagination)
+	 *
+	 * @param PageArray $siblings Optional siblings to use instead of the default. 
+	 * @return Page|NullPage Returns the next sibling page, or a NullPage if none found. 
+	 *
+	 */
+	public function next(PageArray $siblings = null) {
+		if(is_null($siblings)) $siblings = $this->parent->children();
+		$next = $siblings->getNext($this); 
+		if(is_null($next)) $next = new NullPage();
+		return $next; 
+	}
+
+	/**
+	 * Return the previous sibling page
+	 *
+	 * If given a PageArray of siblings (containing the current) it will return the previous sibling relative to the provided PageArray.
+	 *
+	 * Be careful with this function when the page has a lot of siblings. It has to load them all, so this function is best
+	 * avoided at large scale, unless you provide your own already-reduced siblings list (like from pagination)
+	 *
+	 * @param PageArray $siblings Optional siblings to use instead of the default. 
+	 * @return Page|NullPage Returns the previous sibling page, or a NullPage if none found. 
+	 *
+	 */
+	public function prev(PageArray $siblings = null) {
+		if(is_null($siblings)) $siblings = $this->parent->children();
+		$prev = $siblings->getPrev($this);
+		if(is_null($prev)) $prev = new NullPage();
+		return $prev;
+	}
+
+	/**
 	 * Save this page to the database. 
 	 *
 	 * To hook into this (___save), use Pages::save instead. 
@@ -945,10 +985,26 @@ class Page extends WireData implements HasRoles {
 	 *
 	 */
 	public function is($status) {
+
 		if(is_int($status)) {
 			return $this->status & $status; 
-		} else if(is_string($status)) {
+
+		} else if(is_string($status) && $this->sanitizer->name($status) == $status) {
+			// valid template name
 			if($this->template->name == $status) return true; 
+
+		} else if(Selectors::stringHasOperator($status)) {
+			$matches = false;
+			$selectors = new Selectors($status); 	
+			foreach($selectors as $selector) {
+				$matches = true; 
+				$value = $this->get($selector->field); 
+				if(!$selector->matches("$value")) {
+					$matches = false; 
+					break;
+				}
+			}
+			return $matches; 
 		}
 		return false;
 	}
