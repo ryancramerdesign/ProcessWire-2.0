@@ -123,7 +123,7 @@ class ProcessPageView extends Process {
 		}
 
 		// if we still found no page, then we can abort
-		if(!$page) return null;
+		if(!$page || !$page->id) return null;
 
 		// if URL segments and/or page numbers are present and not allowed then abort
 		if(!$this->checkUrlSegments($urlSegments, $page)) return null;
