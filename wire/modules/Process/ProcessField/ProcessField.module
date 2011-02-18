@@ -347,7 +347,8 @@ class ProcessField extends Process implements ConfigurableModule {
 				}	
 			}
 
-		$this->session->redirect("edit?id={$this->field->id}"); 
+		if($this->listAfterSave) $this->session->redirect("./"); 
+			else $this->session->redirect("edit?id={$this->field->id}"); 
 	}
 
 	/**
@@ -463,6 +464,14 @@ class ProcessField extends Process implements ConfigurableModule {
 		$field->attr('checked', empty($data['showListFilters']) ? '' : 'checked'); 
 		$field->label = "Show filtering options in Fields list?";
 		$field->description = "This adds two select boxes to the top of the fields list that let you filter the display of fields by template or type.";
+		$fields->append($field);
+
+		$field = $modules->get("InputfieldCheckbox");
+		$field->attr('name', 'listAfterSave');
+		$field->attr('value', 1); 
+		$field->attr('checked', empty($data['listAfterSave']) ? '' : 'checked'); 
+		$field->label = "Return to fields list after saving a field?";
+		$field->description = "By default, you will remain in the fields editor after saving a field. If you want to instead return to the fields list, check this box.";
 		$fields->append($field);
 
 		return $fields;
