@@ -163,6 +163,8 @@ class ProcessTemplate extends Process {
 		$field->collapsed = count($templateFiles) ? Inputfield::collapsedYes : Inputfield::collapsedNo; 
 		$form->append($field); 
 
+
+
 		/*
 		$field = $this->modules->get('InputfieldSelect');
 		$field->label = 'Fieldgroup';
@@ -443,6 +445,24 @@ class ProcessTemplate extends Process {
 		$form->append($field); 
 		if($template->https) $form->collapsed = Inputfield::collapsedNo;
 
+		// --------------------
+
+		$field = $this->modules->get("InputfieldSelect"); 
+		$field->label = 'Import fields from another template?'; 
+		$field->description = 
+			"If you want to import fields used by another template/fieldgroup, select it here. " . 
+			"Any fields on that template that are not alreay here will be imported to this template. " . 
+			"This imports field definitions only, not content. ";
+ 
+		$field->collapsed = Inputfield::collapsedYes; 
+		$field->attr('id+name', 'import_fieldgroup'); 
+		$field->addOption(''); 
+		$field->attr('value', ''); 
+		foreach($this->fieldgroups->find("sort=name") as $fieldgroup) {
+			if($fieldgroup->name == $this->template->name) continue; 
+			$field->addOption($fieldgroup->name); 
+		}
+		$form->append($field); 
 
 		return $form; 
 	}
@@ -496,33 +516,23 @@ class ProcessTemplate extends Process {
 	}
 
 	/**
-	 * Postprocess the urlSegments field so it becomes a sanitized array
+	 * Import the fields from the given fieldgroup to this template's fieldgroup
 	 *
-	 * REMOVED: This capability may be added back later.  
-	 *
-	protected function saveUrlSegments($urlSegments) {
-
-		if(!strlen($urlSegments)) {
-			$this->template->remove('urlSegments'); 
-			return;
-		}
-
-		if($urlSegments == '*') {
-			$this->template->urlSegments = array('*'); 
-			return;
-		}
-
-		$urlSegments = explode(' ', $urlSegments); 
-
-		foreach($urlSegments as $k => $v) {
-			$urlSegments[$k] = $this->sanitizer->pageName($v); 
-			if(!strlen($urlSegments[$k])) unset($urlSegments[$k]); 
-		}
-
-		$this->template->urlSegments = $urlSegments; 
-	}
 	 */
+	protected function importFieldgroup(Fieldgroup $fieldgroup) {
+		foreach($fieldgroup as $field) {
+			if(!$this->template->fieldgroup->has($field)) {
+				$this->message("Imported field '$field' from '$fieldgroup' to '{$this->template->fieldgroup}'"); 
+				$this->template->fieldgroup->add($field); 
+				$this->fieldAdded($field, $this->template); 
+			}
+		}
+	}
 
+	/**
+	 * Save the fields specified for this template/fieldgroup
+	 *
+	 */
 	protected function saveFields() {
 
 		$ids = isset($_POST['fieldgroup_fields']) ? $_POST['fieldgroup_fields'] : array();
@@ -542,13 +552,19 @@ class ProcessTemplate extends Process {
 			if(!($id = (int) $id)) continue; 
 			if(!$field = $this->fields->get($id)) continue; 
 			if(!$fieldgroup->has($field)) {
-				$this->message("Added new field: $field"); 
+				$this->message("Added new field '$field' to template/fieldgroup '$fieldgroup'"); 
 				$fieldgroup->append($field); 
 				$this->fieldAdded($field, $this->template); 
 			} else { 
 				$fieldgroup->append($field); 
 			}
 		}
+
+		// check if any other fieldgroup should be imported
+		if($this->input->post->import_fieldgroup) {
+			$this->importFieldgroup($this->fieldgroups->get($this->sanitizer->name($this->input->post->import_fieldgroup))); 
+		}
+
 
 		$fieldgroup->save();
 		if($this->config->debug) $this->message("Saved fieldgroup: {$fieldgroup->name}"); 
@@ -723,6 +739,35 @@ class ProcessTemplate extends Process {
 	 */
 	public function ___fieldAdded(Field $field, Template $template) { 
 	}
+
+	/**
+	 * Postprocess the urlSegments field so it becomes a sanitized array
+	 *
+	 * REMOVED: This capability may be added back later.  
+	 *
+	protected function saveUrlSegments($urlSegments) {
+
+		if(!strlen($urlSegments)) {
+			$this->template->remove('urlSegments'); 
+			return;
+		}
+
+		if($urlSegments == '*') {
+			$this->template->urlSegments = array('*'); 
+			return;
+		}
+
+		$urlSegments = explode(' ', $urlSegments); 
+
+		foreach($urlSegments as $k => $v) {
+			$urlSegments[$k] = $this->sanitizer->pageName($v); 
+			if(!strlen($urlSegments[$k])) unset($urlSegments[$k]); 
+		}
+
+		$this->template->urlSegments = $urlSegments; 
+	}
+	 */
+
 
 
 }
