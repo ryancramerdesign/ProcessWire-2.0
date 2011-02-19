@@ -75,9 +75,11 @@ class ProcessPageAdd extends Process {
 
 		$page = new NullPage(); // for getInputfield
 		foreach($this->fuel('fields') as $field) {
-			if($field->flags & Field::flagGlobal) $form->append($field->getInputfield($page)); 
+			if($field->flags & Field::flagGlobal && $field->type instanceof FieldtypePageTitle) {
+				$form->append($field->getInputfield($page)); 
+				break;
+			}
 		}
-
 
 		$field = $this->modules->get('InputfieldPageName');
 		$field->parentPage = $this->parent; 
