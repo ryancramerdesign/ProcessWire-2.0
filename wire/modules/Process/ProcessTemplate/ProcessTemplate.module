@@ -95,6 +95,11 @@ class ProcessTemplate extends Process {
 			$templateFiles[] = $basename; 
 		}
 
+		$importFieldgroup = null;
+		if($this->input->post->import_fieldgroup) {
+			$importFieldgroup = $this->fieldgroups->get($this->sanitizer->name($this->input->post->import_fieldgroup)); 	
+		}
+
 		if(count($this->input->post)) {
 
 			$postTemplates = $this->input->post->templates; 
@@ -118,6 +123,10 @@ class ProcessTemplate extends Process {
 				$template->fieldgroup = $fieldgroup; 
 				$template->save();
 				$this->message("Added template and fieldgroup: $basename"); 
+				if($importFieldgroup) {
+					$this->importFieldgroup($importFieldgroup, $template); 
+					$template->fieldgroup->save();
+				}
 			}
 
 			$this->session->redirect('./'); 
@@ -163,19 +172,10 @@ class ProcessTemplate extends Process {
 		$field->collapsed = count($templateFiles) ? Inputfield::collapsedYes : Inputfield::collapsedNo; 
 		$form->append($field); 
 
-
-
-		/*
-		$field = $this->modules->get('InputfieldSelect');
-		$field->label = 'Fieldgroup';
-		$field->description = "Select the fieldgroup that will be used for the templates selected above.";
-		$field->attr('id+name', 'fieldgroup'); 
-		foreach($this->fuel('fieldgroups') as $fieldgroup) $field->addOption($fieldgroup->id, $fieldgroup->name); 
-		$form->append($field); 
-		*/
+		$form->append($this->buildEditFormImport()); 
 
 		$field = $this->modules->get('InputfieldSubmit');
-		$field->attr('value', 'Add Templates'); 
+		$field->attr('value', 'Add Template' . (count($templateFiles) > 1 ? 's' : '')); 
 		$form->append($field); 
 
 		return $form; 
@@ -212,20 +212,9 @@ class ProcessTemplate extends Process {
 		if(!is_file($template->filename) && !count($this->input->post)) {
 			$this->message(
 				"This template does not have a file associated with it. As a result, viewing pages using this template will produce an error. " . 
-				"If that is not your desired result, upload/create/FTP the template file here: {$template->filename}"
+				"If that is not your desired result, upload/create/FTP the template file here: {$this->config->urls->templates}{$template->basename}"
 				); 
 		}
-
-		/*
-		$field = $this->modules->get("InputfieldRadios"); 
-		$field->label = "Where should this template get fields from?";
-		$field->description = "Each template manages it's own fields by default. But if you prefer, you may use the fields from another template.";
-		$field->attr('name', 'fields_from'); 
-		$field->attr('value', $template->fieldgroup->name == $template->name ? 0 : 1); 
-		$field->addOption(0, "This template has it's own fields"); 
-		$field->addOption(1, "Use another template's fields"); 
-		$form->append($field); 
-		*/
 
 		if($template->fieldgroup->name == $template->name) { 
 			$form->append($this->buildEditFormFields($template)); 
@@ -300,6 +289,25 @@ class ProcessTemplate extends Process {
 		}
 	
 		return $select; 
+	}
+
+	protected function buildEditFormImport() {
+
+		$field = $this->modules->get("InputfieldSelect"); 
+		$field->label = 'Duplicate fields used by another template'; 
+		$field->description = "If you want to duplicate fields used by another template, select it here. ";
+ 
+		$field->collapsed = Inputfield::collapsedYes; 
+		$field->attr('id+name', 'import_fieldgroup'); 
+		$field->addOption(''); 
+		$field->attr('value', ''); 
+
+		foreach($this->fieldgroups->find("sort=name") as $fieldgroup) {
+			if($this->template && $fieldgroup->name == $this->template->name) continue; 
+			$field->addOption($fieldgroup->name); 
+		}
+
+		return $field;
 	}
 
 	protected function buildEditFormAdvanced(Template $template) {
@@ -447,21 +455,8 @@ class ProcessTemplate extends Process {
 
 		// --------------------
 
-		$field = $this->modules->get("InputfieldSelect"); 
-		$field->label = 'Import fields from another template?'; 
-		$field->description = 
-			"If you want to import fields used by another template/fieldgroup, select it here. " . 
-			"Any fields on that template that are not alreay here will be imported to this template. " . 
-			"This imports field definitions only, not content. ";
- 
-		$field->collapsed = Inputfield::collapsedYes; 
-		$field->attr('id+name', 'import_fieldgroup'); 
-		$field->addOption(''); 
-		$field->attr('value', ''); 
-		foreach($this->fieldgroups->find("sort=name") as $fieldgroup) {
-			if($fieldgroup->name == $this->template->name) continue; 
-			$field->addOption($fieldgroup->name); 
-		}
+		$field = $this->buildEditFormImport();
+		$field->description .= "Fields that are already present in this template will be left alone. ";
 		$form->append($field); 
 
 		return $form; 
@@ -505,7 +500,6 @@ class ProcessTemplate extends Process {
 			$this->template->https = (int) $form->get('https')->attr('value'); 
 			$this->template->slashUrls = (int) $form->get('slashUrls')->attr('value');
 			if(!$this->template->childrenTemplatesID) $this->template->remove("childrenTemplatesID"); 
-			//$this->saveUrlSegments(trim($form->get('urlSegments')->attr('value'))); 
 			$this->saveFields();
 			$redirectUrl = "edit?id={$this->template->id}";
 		} 
@@ -518,15 +512,23 @@ class ProcessTemplate extends Process {
 	/**
 	 * Import the fields from the given fieldgroup to this template's fieldgroup
 	 *
+	 * This is used by both the add and save functions. 
+	 *
+	 * @param Fieldgroup $fieldgroup Fieldgroup to import
+	 * @param Template $template Template to import to
+	 *
 	 */
-	protected function importFieldgroup(Fieldgroup $fieldgroup) {
+	protected function importFieldgroup(Fieldgroup $fieldgroup, Template $template) {
+		$total = 0;
 		foreach($fieldgroup as $field) {
-			if(!$this->template->fieldgroup->has($field)) {
-				$this->message("Imported field '$field' from '$fieldgroup' to '{$this->template->fieldgroup}'"); 
-				$this->template->fieldgroup->add($field); 
-				$this->fieldAdded($field, $this->template); 
+			if(!$template->fieldgroup->has($field)) {
+				$total++;
+				$template->fieldgroup->add($field); 
+				$this->fieldAdded($field, $template); 
 			}
 		}
+
+		$this->message("Duplicated $total field(s) from '$fieldgroup' to '{$template->fieldgroup}'"); 
 	}
 
 	/**
@@ -562,7 +564,7 @@ class ProcessTemplate extends Process {
 
 		// check if any other fieldgroup should be imported
 		if($this->input->post->import_fieldgroup) {
-			$this->importFieldgroup($this->fieldgroups->get($this->sanitizer->name($this->input->post->import_fieldgroup))); 
+			$this->importFieldgroup($this->fieldgroups->get($this->sanitizer->name($this->input->post->import_fieldgroup)), $this->template); 
 		}
 
 
@@ -739,35 +741,6 @@ class ProcessTemplate extends Process {
 	 */
 	public function ___fieldAdded(Field $field, Template $template) { 
 	}
-
-	/**
-	 * Postprocess the urlSegments field so it becomes a sanitized array
-	 *
-	 * REMOVED: This capability may be added back later.  
-	 *
-	protected function saveUrlSegments($urlSegments) {
-
-		if(!strlen($urlSegments)) {
-			$this->template->remove('urlSegments'); 
-			return;
-		}
-
-		if($urlSegments == '*') {
-			$this->template->urlSegments = array('*'); 
-			return;
-		}
-
-		$urlSegments = explode(' ', $urlSegments); 
-
-		foreach($urlSegments as $k => $v) {
-			$urlSegments[$k] = $this->sanitizer->pageName($v); 
-			if(!strlen($urlSegments[$k])) unset($urlSegments[$k]); 
-		}
-
-		$this->template->urlSegments = $urlSegments; 
-	}
-	 */
-
 
 
 }
