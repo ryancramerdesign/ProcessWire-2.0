@@ -290,6 +290,14 @@ class FieldtypeFile extends FieldtypeMulti {
 	}
 
 
+	public function ___getConfigAdvancedInputfields(Field $field) {
+		$inputfields = parent::___getConfigAdvancedInputfields($field);
+		$inputfields->remove($inputfields->get('global'));
+		return $inputfields;
+	}
+
+
+
 
 }
 
