@@ -438,7 +438,9 @@ $(document).ready(function() {
 				var $li = $t.parent('.PageListItem'); 
 				var id = $li.data('pageId');
 
-				if($root.is(".PageListSorting")) return false; 
+				if($root.is(".PageListSorting") || $root.is(".PageListSortSaving")) {
+					return false; 
+				}
 
 				if($li.is(".PageListItemOpen")) {
 					$li.removeClass("PageListItemOpen").next(".PageList").slideUp("fast", function() { $(this).remove(); }); 
@@ -570,6 +572,7 @@ $(document).ready(function() {
 					$ul.removeClass('PageListPlaceholder').children('.PageListPlaceholderItem').remove();
 				}
 
+				$root.addClass('PageListSortSaving'); 
 				cancelMove($li); 
 
 				// setup to save the change
@@ -598,7 +601,6 @@ $(document).ready(function() {
 						$(this).fadeIn("fast")
 						$li.removeClass('PageListSortItem'); 
 						$root.removeClass('PageListSorting');
-						//$a.click();
 					}); 
 
 					if(data.error) {
@@ -624,6 +626,9 @@ $(document).ready(function() {
 						n = $numChildren.text().length > 0 ? parseInt($numChildren.text()) + 1 : 1; 
 						$numChildren.text(n); 
 					}
+
+					$root.removeClass('PageListSortSaving'); 
+
 				}, 'json'); 
 
 				return true; // whether or not to allow the sort
