@@ -44,21 +44,23 @@ var $iframe;
 				if(!se.isCollapsed()) {
 
 					$node = $(se.getNode());
-					src = $node.attr('src'); 
-					parts = src.split('/'); 
-					file = parts.pop();
-					imgClass = $node.attr('class'); 
-					imgWidth = $node.attr('width');
-					imgHeight = $node.attr('height'); 
-					imgDescription = $node.attr('alt'); 
-					imgLink = $nodeParent.is("a") ? $nodeParent.attr('href') : '';
+					var src = $node.attr('src'); 
+					if(src) { 
+						var parts = src.split('/'); 
+						file = parts.pop();
+						imgClass = $node.attr('class'); 
+						imgWidth = $node.attr('width');
+						imgHeight = $node.attr('height'); 
+						imgDescription = $node.attr('alt'); 
+						imgLink = $nodeParent.is("a") ? $nodeParent.attr('href') : '';
 
-					parts = parts.reverse();
-					page_id = 0; 
+						parts = parts.reverse();
+						page_id = 0; 
 
-					for(n = 0; n < parts.length; n++) {
-						page_id = parseInt(parts[n]); 
-						if(page_id > 0) break;
+						for(n = 0; n < parts.length; n++) {
+							page_id = parseInt(parts[n]); 
+							if(page_id > 0) break;
+						}
 					}
 				}
 
