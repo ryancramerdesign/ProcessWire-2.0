@@ -140,8 +140,9 @@ class ProcessPageEdit extends Process {
 				$this->message("Saved Page: " . $this->page->url); 
 			}
 
-			if($this->redirectUrl) $this->session->redirect($this->redirectUrl); 
-				else $this->session->redirect("./?id={$this->page->id}"); 
+			if(!$this->redirectUrl) $this->redirectUrl = "./?id={$this->page->id}"; 
+			if($this->input->get->modal) $this->redirectUrl .= "&modal=1";
+			$this->session->redirect($this->redirectUrl); 
 		}
 
 
@@ -159,7 +160,7 @@ class ProcessPageEdit extends Process {
 		$fields->attr('title', 'Content'); 
 
 		$form->attr('id', 'ProcessPageEdit'); 
-		$form->attr('action', './?id=' . $this->id); 
+		$form->attr('action', './?id=' . $this->id . ($this->input->get->modal ? "&modal=1" : '')); 
 		$form->attr('method', 'post'); 
 		$form->attr('enctype', 'multipart/form-data'); 
 		$form->attr('class', 'validate'); 
@@ -169,10 +170,18 @@ class ProcessPageEdit extends Process {
 		$form->append($this->buildFormSettings()); 
 		if($this->isTrash) $this->message("This page is in the Trash"); 
 		if($this->page->deleteable()) $form->append($this->buildFormDelete());
-		if(!$this->page->isTrash() && !$this->page->is(Page::statusUnpublished)) $form->append($this->buildFormView()); 
+		if(!$this->page->isTrash() && !$this->page->is(Page::statusUnpublished) && !$this->input->get->modal) {
+			$form->append($this->buildFormView()); 
+		}
 
 		$field = $this->modules->get('InputfieldSubmit');
 		$field->attr('id+name', 'submit_save'); 
+		$field->attr('value', 'Save Page'); 
+		$form->append($field); 
+
+		$field = $this->modules->get('InputfieldSubmit');
+		$field->attr('name', 'submit_save'); 
+		$field->attr('id', 'submit_save_top'); 
 		$field->attr('value', 'Save Page'); 
 		$form->append($field); 
 
@@ -206,7 +215,7 @@ class ProcessPageEdit extends Process {
 		$button = $this->modules->get("InputfieldButton"); 
 		$button->attr('id+name', 'AddPageBtn'); 
 		$button->attr('value', "Add New Page Here");
-		$button->attr('href', "../add/?parent_id={$this->page->id}");
+		$button->attr('href', "../add/?parent_id={$this->page->id}" . ($this->input->get->modal ? "&modal=1" : ''));
 
 		$field = $this->modules->get("InputfieldMarkup"); 
 		$field->label = "Children / Subpages";
@@ -285,6 +294,7 @@ class ProcessPageEdit extends Process {
 			$field = $this->modules->get('InputfieldPageListSelect');
 			$field->label = "Parent";
 			$field->attr('id+name', 'parent_id'); 
+			$field->required = true; 
 			$field->attr('value', $this->page->parent_id); 
 			$field->parent_id = 0; 
 			$wrapper->add($field); 
