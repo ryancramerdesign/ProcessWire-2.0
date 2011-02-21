@@ -40,9 +40,22 @@ class PageFinder extends Wire {
 
 		$maxStatus = null; 
 
-		foreach($selectors as $selector) {
+		foreach($selectors as $key => $selector) {
 			if($selector->field == 'status') {
-				if(is_null($maxStatus) || $selector->value > $maxStatus) 
+				$value = $selector->value; 
+				if(!ctype_digit("$value")) {
+					// allow use of some predefined labels for Page statuses
+					if($value == 'hidden') $selector->value = Page::statusHidden; 
+						else if($value == 'unpublished') $selector->value = Page::statusUnpublished; 
+						else if($value == 'locked') $selector->value = Page::statusLocked; 
+						else $selector->value = 1; 
+
+					if($selector->operator == '=') {
+						// there is no point in an equals operator here, so we make it a bitwise AND, for simplification
+						$selectors[$key] = new SelectorBitwiseAnd('status', $selector->value); 
+					}
+				}
+				if(is_null($maxStatus) || $value > $maxStatus) 
 					$maxStatus = (int) $selector->value; 
 			}
 		}
@@ -171,7 +184,7 @@ class PageFinder extends Wire {
 			} else if($this->getFuel('fields')->isNativeName($field)) {
 				$this->getQueryNativeField($query, $selector, $field); 
 				continue; 
-			}
+			} 
 
 			foreach($fields as $n => $field) {
 
