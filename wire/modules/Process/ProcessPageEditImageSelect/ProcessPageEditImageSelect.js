@@ -50,8 +50,14 @@ $(document).ready(function() {
 	if($img.size() > 0) {
 		$img = $img.first();
 
-		if($img.width() > 0) setupImage($img); 
-			else $img.load(setupImage); 
+		if($img.width() > 0) {
+			setupImage($img); 
+		} else {
+			$img.load(function() {
+				$img = $(this); 
+				setupImage($img); 
+			}); 
+		}
 
 	}
 
