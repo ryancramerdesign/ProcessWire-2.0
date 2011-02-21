@@ -83,7 +83,7 @@ class FieldtypeCache extends Fieldtype {
 		$value = array(); // we don't care what value gets passed in here
 		foreach($field->cacheFields as $name) {
 			$f = $this->fields->get($name); 
-			$value[$name] = $f->type->sleepValue($page, $f, $page->get($name)); 
+			if($f) $value[$name] = $f->type->sleepValue($page, $f, $page->get($name)); 
 		}
 		return json_encode($value); 
 	}
