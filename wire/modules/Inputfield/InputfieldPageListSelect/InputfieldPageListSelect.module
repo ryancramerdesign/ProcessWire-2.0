@@ -19,6 +19,10 @@ class InputfieldPageListSelect extends Inputfield {
 		$this->fuel('modules')->get('ProcessPageList'); // prerequisite module
 		$this->set('parent_id', 0); 
 		$this->set('labelFieldName', 'title'); 
+		$this->set('startLabel', 'Change'); 
+		$this->set('cancelLabel', 'Cancel');
+		$this->set('selectLabel', 'Select');
+		$this->set('unselectLabel', 'Unselect'); 
 		parent::init();
 	}
 
@@ -29,25 +33,18 @@ class InputfieldPageListSelect extends Inputfield {
 			return "<p class='error'>Unable to render this field due to missing parent page in field settings.</p>";
 		}
 
-		$out = '';
-		$selectStartLabel = "Change";
-		$selectCancelLabel = 'Cancel';
-		$selectSelectLabel = 'Select';
-		$selectUnselectLabel = 'Unselect';
-
-		$out .=	"\n<input type='text' " . $this->getAttributesString() . " />";
-
-		$out .= "\n<script>$(document).ready(function() { " . 
+		$out =	"\n<input type='text' " . $this->getAttributesString() . " />" . 
+			"\n<script>$(document).ready(function() { " . 
 			"var t = $('#{$this->id}'); " . 
 			"t.ProcessPageList({ " . 
 				"mode: 'select', " . 
 				"rootPageID: {$this->parent_id}, " . 
-				"selectAllowUnselect: true, " . 
-				"selectStartLabel: '$selectStartLabel', " . 
+				"selectAllowUnselect: " . ($this->required ? "false" : "true") . ", " . 
+				"selectStartLabel: \"{$this->startLabel}\", " . 
 				"selectShowPageHeader: true, " . 
-				"selectSelectLabel: '$selectSelectLabel', " . 
-				"selectUnselectLabel: '$selectUnselectLabel', " . 
-				"selectCancelLabel: '$selectCancelLabel' " . 
+				"selectSelectLabel: \"{$this->selectLabel}\", " . 
+				"selectUnselectLabel: \"{$this->unselectLabel}\", " . 
+				"selectCancelLabel: \"{$this->cancelLabel}\" " . 
 			"}).hide()" . 
 			"});</script>";
 

@@ -45,3 +45,11 @@
 		width: 99%; 
 	}
 
+#ProcessPageEditImageSelect .Inputfields li {
+	margin-top: 0; 
+}
+
+#ProcessPageEditImageSelect .PageListStatusSystem {
+	display: none; 
+}
+

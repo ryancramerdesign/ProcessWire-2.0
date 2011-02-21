@@ -58,13 +58,29 @@ class Pages extends Wire {
 	protected $outputFormatting = false; 
 
 	/**
+	 * IDs of system specific pages
+	 *
+	 */
+	protected $systemPageIDs = array(); 
+
+	/**
 	 * Create the Pages object
 	 *
 	 */
 	public function __construct() {
+
 		$this->templates = $this->fuel('templates'); 
 		$this->pageFinder = new PageFinder($this->fuel('fieldgroups')); 
 		$this->sortfields = new PagesSortfields();
+
+		// TODO make new 'system' status in Page, so that this isn't necessary
+		$this->systemPageIDs = array(1, 
+			$this->config->trashPageID, 
+			$this->config->adminRootPageID, 
+			$this->config->http404PageID,
+			$this->config->loginPageID, 
+			);
+
 	}
 
 
@@ -495,15 +511,8 @@ class Pages extends Wire {
 	 */
 	public function isDeleteable(Page $page) {
 
-		$undeleteablePageIDs = array(0, 1, 
-			$this->config->trashPageID, 
-			$this->config->adminRootPageID, 
-			$this->config->http404PageID,
-			$this->config->loginPageID, 
-			);
-
 		$deleteable = true; 
-		if(in_array($page->id, $undeleteablePageIDs)) $deleteable = false; 
+		if(!$page->id || in_array($page->id, $this->systemPageIDs)) $deleteable = false; 
 			else if($page instanceof NullPage) $deleteable = false;
 
 		return $deleteable;

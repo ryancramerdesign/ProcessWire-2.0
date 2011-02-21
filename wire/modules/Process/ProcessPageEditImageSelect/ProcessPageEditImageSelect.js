@@ -1,25 +1,12 @@
 $(document).ready(function() {
 
-	/*
-        var options = {
-                selectStartLabel: 'Select Images from Another Page'
-        };
-	var page_id = $("#page_id").val();
+	var $page_id = $("#page_id"); 
+	var page_id = $page_id.val();
 
-	$("#page_id").ProcessPageList(options).hide()
-		.bind('pageSelected', function(event, data) {
-			if(data.id != page_id) {
-				window.location = "./?id=" + data.id + '&modal=1'; 
-			}
-			
-			///window.location = "./id=" + $("#
-			//selectedPageData = data;
-			//selectedPageData.url = config.urls.root + data.url.substring(1);
-			//$("#link_page_url").val(selectedPageData.url);
-		});
-	*/
-
-
+	$page_id.bind("pageSelected", function(event, data) {
+		if(data.id == page_id) return;
+		window.location = "./?id=" + data.id + "&modal=1";	
+	}); 
 
 
 	function setupImage($img) {

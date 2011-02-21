@@ -70,7 +70,11 @@ $(document).ready(function() {
 			ajaxURL: config.urls.admin + 'page/list/', 	
 
 			// URL where page move's should be posted
-			ajaxMoveURL: config.urls.admin + 'page/sort/' 	
+			ajaxMoveURL: config.urls.admin + 'page/sort/',
+
+
+			// ID sof the pages that we want to automatically open (default none) 
+			openPageIDs: []
 		}; 
 
 		$.extend(options, customOptions);
@@ -343,7 +347,7 @@ $(document).ready(function() {
 				}; 
 
 				if(!replace) $target.append($loading.show()); 
-				$.getJSON(options.ajaxURL + "?id=" + id + "&render=JSON&start=" + start, processChildren); 
+				$.getJSON(options.ajaxURL + "?id=" + id + "&render=JSON&start=" + start + "&open=" + options.openPageIDs[0], processChildren); 
 			}
 
 			/**
@@ -364,6 +368,7 @@ $(document).ready(function() {
 				$("a.PageListPage", $ul).click(clickChild); 
 				$(".PageListActionMove a", $ul).click(clickMove); 
 				$(".PageListActionSelect a", $ul).click(clickSelect); 
+				$(".PageListTriggerOpen a.PageListPage", $ul).click();
 
 				return $list; 
 			}
@@ -386,6 +391,13 @@ $(document).ready(function() {
 				if(child.status == 0) $li.addClass('PageListStatusOff disabled');
 				if(child.status & 1024) $li.addClass('PageListStatusHidden secondary'); 
 				if(child.status & 4) $li.addClass('PageListStatusLocked'); 
+				if(child.type.length > 0) {
+					if(child.type == 'System') $li.addClass('PageListStatusSystem'); 
+				}
+
+				$(options.openPageIDs).each(function(n, id) {
+					if(child.id == id) $li.addClass('PageListTriggerOpen'); 
+				}); 
 
 				$li.append($a); 
 				var $numChildren = $("<span>" + (child.numChildren ? child.numChildren : '') + "</span>").addClass('PageListNumChildren detail'); 
@@ -660,7 +672,7 @@ $(document).ready(function() {
 
 				// jump to specified anchor, if provided
 				if(options.selectSelectHref == '#') return false; 
-					return true; 
+				return true; 
 			}
 
 

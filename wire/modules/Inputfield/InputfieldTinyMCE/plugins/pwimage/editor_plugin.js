@@ -93,26 +93,25 @@ var $iframe;
 				$iframe.load(function() {
 
 					var $i = $iframe.contents();
-
 					if($i.find("#selected_image").size() > 0) {
 
 						$iframe.dialog("option", "buttons", {
 
 							"Insert This Image": function() {
 
-								var $img = $("#selected_image", $i); 
-								var url = $img.attr('src'); 
-								var width = $img.attr('width');
-								var height = $img.attr('height'); 
-								var alt = $("#selected_image_description", $i).val();
-								var cls = $img.removeClass('ui-resizable').attr('class'); 
-								var link = $("#selected_image_link:checked", $i).val();
-                                
-
-								if(alt && alt.length > 0) alt = $("<div />").text(alt).html().replace(/"/g, '&quot;'); 
-
 								function insertImage(url) {
+									var $i = $iframe.contents();
+									var $img = $("#selected_image", $i); 
+									var url = $img.attr('src'); 
+									var width = $img.attr('width');
+									var height = $img.attr('height'); 
+									var alt = $("#selected_image_description", $i).val();
+									var cls = $img.removeClass('ui-resizable').attr('class'); 
+									var link = $("#selected_image_link:checked", $i).val();
 									var html = '<img class="' + cls + '" src="' + url + '" mce_src="' + url + '" '; 
+
+									if(alt && alt.length > 0) alt = $("<div />").text(alt).html().replace(/"/g, '&quot;'); 
+
 									if(width > 0) html += 'width="' + width + '" '; 
 									if(height > 0) html += 'height="' + height + '" '; 
 									html += 'alt="' + alt + '" />';
@@ -123,12 +122,17 @@ var $iframe;
 									$iframe.dialog("close"); 
 								}
 
+								var $i = $iframe.contents();
+								var $img = $("#selected_image", $i); 
+
 								if($img.is('.resized')) {
 
 									$iframe.dialog("disable").dialog("option", "title", "Saving Resized Image"); 
 									$img.removeClass("resized"); 
-									cls = $img.attr('class'); 
-									file = $img.attr('src'); 
+									var cls = $img.attr('class'); 
+									var width = $img.attr('width');
+									var height = $img.attr('height'); 
+									var file = $img.attr('src'); 
 									file = file.substring(file.lastIndexOf('/')+1); 
 
 									$.get(modalUri + 'resize?id=' + page_id + '&file=' + file + '&width=' + width + '&height=' + height, function(data) {

@@ -95,8 +95,8 @@ class ProcessPageEditImageSelect extends Process {
 			}
 		}
 
-		if(!$numImageFields) $this->error("There are no image fields available. In order to add or select images, at least one 'images' field must be present in this page's template."); 
-			else if(!$numImages) $this->message("There are no images attached to this page. You must upload images to the page you are editing before you can insert them here."); 
+		if(!$numImageFields) $this->message("There are no image fields on this page. Choose another page to select images from."); 
+			else if(!$numImages) $this->message("There are no images present on this page. Close this window and upload images, or select images from another page."); 
 		return $allImages; 
 	}
 
@@ -120,14 +120,22 @@ class ProcessPageEditImageSelect extends Process {
 
 			$out = "\n<ul id='select_images'>$out\n</ul>";
 
-			/*
-			$field = $this->modules->get("InputfieldInteger"); 
-			$field->label = "Page: " . $this->page->get("title|path");
-			$field->attr('id+name', 'page_id'); 
-			$field->collapsed = Inputfield::collapsedYes; 
-			$form->append($field); 
-			*/
 		}
+
+		$form = $this->modules->get("InputfieldForm");
+		$form->action = "./"; 
+		$form->method = "get";
+
+		$field = $this->modules->get("InputfieldPageListSelect"); 
+		$field->label = "Page: " . $this->page->get("title") . " (" . $this->page->path . ")";
+		$field->description = "If you would like to select images from another page, select the page below.";
+		$field->attr('id+name', 'page_id'); 
+		$field->value = $this->page->id; 
+		$field->collapsed = count($images) ? Inputfield::collapsedYes : Inputfield::collapsedNo;
+		$field->required = true; 
+		$form->append($field); 
+
+		$out = $form->render() . $out;
 
 
 		return "<div id='ProcessPageEditImageSelect'>" . $out . "\n</div>";
