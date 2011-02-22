@@ -178,7 +178,7 @@ class MarkupPagerNav extends Wire implements Module {
 					if($slashUrls === 0) $url .= '/'; // enforce a trailing slash, regardless of slashUrls template setting
 					$url .= "$pageNumUrlPrefix{$item->pageNum}";
 				} else {
-					$url .= ($this->queryString ? "&" : "?") . "$pageNumPrefix=" . $item->pageNum;
+					$url .= ($this->queryString ? "&" : "?") . "$pageNumUrlPrefix=" . $item->pageNum;
 				}
 			}
 
