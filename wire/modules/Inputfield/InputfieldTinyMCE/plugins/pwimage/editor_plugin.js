@@ -126,28 +126,21 @@ var $iframe;
 								var $i = $iframe.contents();
 								var $img = $("#selected_image", $i); 
 
-								if($img.is('.resized')) {
+								$iframe.dialog("disable").dialog("option", "title", "Saving Image"); 
+								$img.removeClass("resized"); 
 
-									$iframe.dialog("disable").dialog("option", "title", "Saving Resized Image"); 
-									$img.removeClass("resized"); 
-									var cls = $img.attr('class'); 
-									var width = $img.attr('width');
-									var height = $img.attr('height'); 
-									var file = $img.attr('src'); 
-									file = file.substring(file.lastIndexOf('/')+1); 
+								var cls = $img.attr('class'); 
+								var width = $img.attr('width');
+								var height = $img.attr('height'); 
+								var file = $img.attr('src'); 
+								file = file.substring(file.lastIndexOf('/')+1); 
 
-									$.get(modalUri + 'resize?id=' + page_id + '&file=' + file + '&width=' + width + '&height=' + height, function(data) {
-										var $div = $("<div></div>").html(data); 
-										var $img = $div.find("#selected_image"); 
-										var url = $img.attr('src'); 	
-										height = $img.attr('height'); 
-										width = $img.attr('width'); 
-										insertImage(url); 
-									}); 
-								} else {
-									// cls = $img.attr('class'); 
-									insertImage($img.attr('src')); 
-								}
+								$.get(modalUri + 'resize?id=' + page_id + '&file=' + file + '&width=' + width + '&height=' + height, function(data) {
+									var $div = $("<div></div>").html(data); 
+									var $img = $div.find("#selected_image"); 
+									var url = $img.attr('src'); 	
+									insertImage(url); 
+								}); 
 
 							},
 
