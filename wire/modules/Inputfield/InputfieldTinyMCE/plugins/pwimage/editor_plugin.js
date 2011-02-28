@@ -104,7 +104,6 @@ var $iframe;
 								function insertImage(url) {
 									var $i = $iframe.contents();
 									var $img = $("#selected_image", $i); 
-									var url = $img.attr('src'); 
 									var width = $img.attr('width');
 									var height = $img.attr('height'); 
 									var alt = $("#selected_image_description", $i).val();
@@ -139,8 +138,8 @@ var $iframe;
 
 									$.get(modalUri + 'resize?id=' + page_id + '&file=' + file + '&width=' + width + '&height=' + height, function(data) {
 										var $div = $("<div></div>").html(data); 
-										$img = $div.find("#selected_image"); 
-										url = $img.attr('src'); 	
+										var $img = $div.find("#selected_image"); 
+										var url = $img.attr('src'); 	
 										height = $img.attr('height'); 
 										width = $img.attr('width'); 
 										insertImage(url); 
