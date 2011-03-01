@@ -61,8 +61,10 @@ class FieldtypeModule extends Fieldtype {
 
 		foreach($this->modules as $module) {
 			$found = false; 
+			$parents = class_parents("$module"); 
 			foreach($field->moduleTypes as $moduleType) {
-				if(strpos("$module", $moduleType) === 0) {
+				if(in_array($moduleType, $parents)) { 
+				//if(strpos("$module", $moduleType) === 0) {
 					$found = true; 
 					break;
 				}
@@ -100,6 +102,7 @@ class FieldtypeModule extends Fieldtype {
 		$f->attr('value', is_array($field->moduleTypes) ? $field->moduleTypes : array()); 
 		$f->label = "Module Types";
 		$f->description = "Check all of the module types that may be selectable in this field.";
+		$inputfields->append($f); 
 
 		$f = $this->modules->get("InputfieldCheckbox"); 
 		$f->attr('name', 'instantiateModule'); 
