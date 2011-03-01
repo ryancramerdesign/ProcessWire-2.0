@@ -186,35 +186,74 @@ class Sanitizer extends Wire {
 	}
 
 	/**
+	 * Return the given path if valid, or blank if not. 
+	 *
+	 * Path is validated per ProcessWire "name" convention of ascii only [-_./a-z0-9]
+	 * As a result, this function is primarily useful for validating ProcessWire paths,
+	 * and won't always work with paths outside ProcessWire. 
+	 *
+	 * @param string $value Path 
+	 *
+	 */
+	public function path($value) {
+		if(!preg_match('{^[-_./a-z0-9]+$}iD', $value)) return '';
+		if(strpos($value, '/./') !== false || strpos($value, '//') !== false) $value = '';		
+		return $value;
+	}
+
+	/**
 	 * Returns a valid URL, or blank if it can't be made valid 
 	 *
 	 * Performs some basic sanitization like adding a protocol to the front if it's missing, but leaves alone local/relative URLs. 
 	 *
+	 * URL is not required to confirm to ProcessWire conventions unless a relative path is given.
+	 *
+	 * Please note that URLs should always be entity encoded in your output. <script> is technically allowed in a valid URL, so 
+	 * your output should always entity encoded any URLs that came from user input. 
+	 *
 	 * @param string $value URL
+	 * @param bool $allowRelative Whether to allow relative URLs
 	 * @return string
+	 * @todo add TLD validation
 	 *
 	 */
-	public function url($value) {
+	public function url($value, $allowRelative = true) {
 
 		if(!strlen($value)) return '';
+
+		// this filter_var sanitizer just removes invalid characters that don't appear in domains or paths
+		$value = filter_var($value, FILTER_SANITIZE_URL); 
+		
+		if(!strpos($value, ".") && $allowRelative) {
+			// if there's no dot (or it's in position 0) and relative paths are allowed, 
+			// we can safely assume this is a relative path.
+			// relative paths must follow ProcessWire convention of ascii-only, 
+			// so they are passed through the $sanitizer->path() function.
+			return $this->path($value); 
+		}
 
 		if(!strpos($value, '://')) {
 			// URL is missing protocol, or is local/relative
 
-			$dotPos = strpos($value, "."); 
-			$slashPos = strpos($value, "/"); 
+			if($allowRelative) {
+				// determine if this is a domain name 
+				// regex legend:       (www.)?      company.         com       ( .uk or / or end)
+				if(preg_match('{^([^\s_.]+\.)?[^-_\s.][^\s_.]+\.([a-z]{2,6})([./:#]|$)}i', $value, $matches)) {
+					// most likely a domain name
+					// $tld = $matches[3]; // TODO add TLD validation to confirm it's a domain name
+					$value = filter_var("http://$value", FILTER_VALIDATE_URL); 
 
-			if($dotPos !== false && $slashPos !== false && $dotPos < $slashPos) {
-				// something like: www.company.com/about
-				$value = "http://$value";
-
-			} else if($dotPos === false) {
-				// relative URL like: /about/ or about/
-				// leave it alone
+				} else {
+					// most likely a relative path
+					$value = $this->path($value); 
+				}
+				
+			} else {
+				// relative urls aren't allowed, so add the protocol and validate
+				$value = filter_var("http://$value", FILTER_VALIDATE_URL); 
 			}
 		}
 
-		$value = filter_var($value, FILTER_SANITIZE_URL); 
 		return $value ? $value : '';
 	}
 
