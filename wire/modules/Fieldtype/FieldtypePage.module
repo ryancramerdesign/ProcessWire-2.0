@@ -107,9 +107,13 @@ class FieldtypePage extends FieldtypeMulti {
 		if($field->derefAsPage) {
 			$pg = false;
 			if(count($value)) $pg = $this->fuel('pages')->get((int) reset($value)); 
+			if($pg && $pg->status >= Page::statusUnpublished) $pg = false;
 			return $pg; 
 		} else {
 			$pageArray = $this->fuel('pages')->getById($value); 
+			foreach($pageArray as $pg) {
+				if($pg->status >= Page::statusUnpublished) $pageArray->remove($pg); 
+			}
 			$pageArray->resetTrackChanges(); 
 			return $pageArray; 
 		}
