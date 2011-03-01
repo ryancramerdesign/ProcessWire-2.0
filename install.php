@@ -198,6 +198,7 @@ class Installer {
 		if(!isset($values['dbPass'])) $values['dbPass'] = ini_get("mysqli.default_pw"); 
 
 		if(!$values['dbHost']) $values['dbHost'] = 'localhost';
+		if(!$values['dbPort']) $values['dbPort'] = 3306; 
 
 		foreach($values as $key => $value) $values[$key] = htmlspecialchars($value, ENT_QUOTES); 
 
@@ -223,7 +224,7 @@ class Installer {
 			$values[$field] = $value; 
 		}
 
-		if(!$values['dbUser'] || !$values['dbName']) {
+		if(!$values['dbUser'] || !$values['dbName'] || !$values['dbPort']) {
 			$this->err("Missing database configuration fields"); 
 			return $this->dbConfig();
 		}
