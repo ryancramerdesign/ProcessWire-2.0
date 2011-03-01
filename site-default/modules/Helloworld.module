@@ -30,10 +30,10 @@ class Helloworld extends WireData implements Module {
 			'title' => 'Hello World', 
 
 			// version: major, minor, revision, i.e. 100 = 1.0.0
-			'version' => 100, 
+			'version' => 101, 
 
 			// summary is brief description of what this module is
-			'summary' => 'An example module used for demonstration purposes.',
+			'summary' => 'An example module used for demonstration purposes. See the /site/modules/Helloworld.module file for details.',
 			
 			// Optional URL to more information about the module
 			'href' => 'http://www.processwire.com',
@@ -62,11 +62,14 @@ class Helloworld extends WireData implements Module {
 		// add a hook after the $pages->save, to issue a notice every time a page is saved
 		$this->pages->addHookAfter('save', $this, 'example1'); 
 
-		// add a hello() method to all Page instances, highlighting a 1000+ foot skyscraper club
-		$this->addHook("Page::hello", $this, 'example2'); 
+		// add a hook after each page is rendered and modify the output
+		$this->addHookAfter('Page::render', $this, 'example2'); 
 
-		// add a hook when each page is loaded that makes all architect names uppercase
-		$this->addHook("Page::loaded", $this, 'example3'); 
+		// add a 'hello' method to every page that returns "Hello World"
+		$this->addHook('Page::hello', $this, 'example3'); 
+
+		// add a 'hello_world' property to every page that returns "Hello [user]"
+		$this->addHookProperty('Page::hello_world', $this, 'example4'); 
 
 	}
 
@@ -76,35 +79,39 @@ class Helloworld extends WireData implements Module {
 	 */
 	public function example1($event) {
 		$page = $event->arguments[0]; 
-		$this->message("Hello World! You saved {$page->path}. This is a demo of a module that hooks into pages->save()."); 
+		$this->message("Hello World! You saved {$page->path}."); 
 	}
 
+
 	/**
-	 * Example2 adds a new method to all Page instances, where the return value of $page->hello is populated if the skyscraper is 1000+ feet
- 	 *
+	 * Example2 hooks into every page after it's rendered and adds "Hello World" text at the bottom
+	 *
 	 */
 	public function example2($event) {
 
-		// $event->object is the object instances the event came from. in this case it's a Page object. 
 		$page = $event->object; 
 
-		// if the skyscraper is 1000+ feet, then we'll return some text that says it's in the 1000+ foot club
-		if($page->template == 'skyscraper' && $page->height >= 1000) {
-			$event->return = "<p><em>At {$page->height} feet, this skyscraper is part of the 1000+ foot club.</em></p>"; 
+		// don't add this to the admin pages
+		if($page->template == 'admin') return;
 
-		// otherwise we'll return nothing
-		} else {
-			$event->return = '';
-		}
+		// add a "Hello World" paragraph right before the closing body tag
+		$event->return = str_replace("</body>", "<p>Hello World!</p></body>", $event->return); 
 	}
 
 	/**
-	 * Example3 hooks into every page when it's loaded and if it's an architect, it makes the title uppercase
+	 * Example3 adds a 'hello' method (not property) to every page that simply returns "Hello World"
 	 *
 	 */
 	public function example3($event) {
-		$page = $event->object; 
-		if($page->template == 'architect') $page->title = strtoupper($page->title); 
+		$event->return = "Hello World";
+	}
+
+	/**
+	 * Example 4 adds a 'hello_world' property (not method) to every page that returns "Hello [user]"
+	 *
+	 */
+	public function example4($event) {
+		$event->return = "Hello " . $this->user->name; 
 	}
 	
 }
