@@ -149,18 +149,30 @@ $config->userAuthHashType = 'sha1';
 $config->pageNumUrlPrefix = 'page';
 
 /**
- * Optional DB socket config for sites that need it (for most you should exclude this)
+ * Database character set. utf8 recommended.
+ *
+ * Note that you should probably not add/change this on an existing site. i.e. don't add this to 
+ * an existing ProcessWire installation without asking how in the ProcessWire forums. 
  *
  */
-// $config->dbSocket = '';
-
+$config->dbCharset = 'utf8';
 
 /**
- * Optional 'set names utf8' for sites that need it (for most you should exclude this)
+ * Optional 'set names utf8' for sites that need it (this option is deprecated)
+ *
+ * This may be used instead of the $config->dbCharset = 'utf8' option, and exists here only for
+ * backwards compatibility with existing installations. Otherwise, this option is deprecated.
+ * 
+ * $config->dbSetNamesUTF8 = true; 
  *
  */ 
-// $config->dbSetNamesUTF8 = true; 
 
+/**
+ * Optional DB socket config for sites that need it (for most you should exclude this)
+ *
+ * $config->dbSocket = '';
+ * 
+ */
 
 /**
  * Installer config data appears below

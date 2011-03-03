@@ -90,7 +90,7 @@ class Sanitizer extends Wire {
 	public function pageName($value, $beautify = false) {
 
 		if($beautify) {
-			$value = iconv("UTF-8", "ASCII//IGNORE", $value); 
+			$value = iconv("UTF-8", "ASCII//TRANSLIT//IGNORE", $value); 
 		}
 
 		$value = strtolower($this->nameFilter($value, array('-', '_', '.'), '-')); 
