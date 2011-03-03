@@ -74,7 +74,7 @@ class FieldtypeCache extends Fieldtype {
 				continue; 
 			}
 			$v = $f->type->wakeupValue($page, $field, $v); 
-			$page->setFieldValue($name, $v, false); 
+			if(!$page->__isset($name)) $page->setFieldValue($name, $v, false); 
 		}
 		return $field->cacheFields;
 	}
