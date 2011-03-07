@@ -95,6 +95,7 @@ class Fields extends WireSaveableItems {
 		'sort', 
 		'sortfield', 
 		'flags', 
+		'child', 
 		'children', 
 		'siblings', 
 		'roles', 
@@ -105,6 +106,7 @@ class Fields extends WireSaveableItems {
 		'rootParent', 
 		'fieldgroup',
 		'fields', 
+		'data',
 		); 
 
 	/**
