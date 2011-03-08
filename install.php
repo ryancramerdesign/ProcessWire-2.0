@@ -146,7 +146,17 @@ class Installer {
 			if(in_array('mod_rewrite', apache_get_modules())) $this->li("Found Apache module: mod_rewrite"); 
 				else $this->err("Apache mod_rewrite does not appear to be installed and is required by ProcessWire."); 
 		} else {
-			$this->err("Unable to determine installed Apache modules. Please ensure you are running Apache, as it is currently required in order to run ProcessWire."); 
+			//******************************************************************
+			// Added to provide a check for mod_rewrite that works on my host.
+			// See the modifications to the .htaccess for other changes need to 
+			// make this work.
+			//******************************************************************
+			$mod_rewrite =  getenv('HTTP_MOD_REWRITE')=='On' ? true : false ;
+			if ( $mod_rewrite ) {
+			  $this->li("Found Apache module: mod_rewrite");
+			} else {
+			  $this->err("Unable to determine installed Apache modules. Please ensure you are running Apache, as it is currently required in order to run ProcessWire."); 
+			}
 		}
 
 		if(is_writable("./site/assets/")) $this->li("./site/assets/ is writable"); 

@@ -4,7 +4,17 @@
 
 Options -Indexes
 Options +FollowSymLinks
-RewriteEngine On
+
+<IfModule mod_rewrite.c>
+
+    #// Tell PHP that the mod_rewrite module is ENABLED.
+    SetEnv HTTP_MOD_REWRITE On
+
+    RewriteEngine on
+    RewriteBase /
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    #// The rest of your rewrite rules here
 
 # -----------------------------------------------------------------------------------------------
 # Access Restrictions: Keep web users out of ProcessWire system files
@@ -45,4 +55,10 @@ RewriteRule ^(.*)$ index.php?it=$1 [L,QSA]
 #################################################################################################
 # END PROCESSWIRE HTACCESS DIRECTIVES
 #################################################################################################
+
+
+	
+</IfModule>
+
+#RewriteEngine On
 
