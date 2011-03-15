@@ -35,7 +35,17 @@ function ProcessWireBootConfig() {
 	 */
 	$rootPath = dirname(__FILE__);
 	if(DIRECTORY_SEPARATOR != '/') $rootPath = str_replace(DIRECTORY_SEPARATOR, '/', $rootPath); 
-	$rootURL = isset($_SERVER['HTTP_HOST']) ? substr($rootPath, strlen(rtrim($_SERVER['DOCUMENT_ROOT'], '/'))) . '/' : '/';
+
+	if(isset($_SERVER['HTTP_HOST'])) {
+		// when serving pages from a web server
+		$docRoot = rtrim($_SERVER['DOCUMENT_ROOT'], '/');
+		if(strpos($rootPath, $docRoot) !== 0) $docRoot = rtrim(realpath($docRoot), '/');
+		$rootURL = substr($rootPath, strlen($docRoot)) . '/';
+	} else {
+		// when included from another app or command line script
+		$rootURL = '/';
+	}
+
 	$wireDir = 'wire';
 	$coreDir = "$wireDir/core";
 	$siteDir = "site";
