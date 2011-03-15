@@ -146,7 +146,14 @@ class Installer {
 			if(in_array('mod_rewrite', apache_get_modules())) $this->li("Found Apache module: mod_rewrite"); 
 				else $this->err("Apache mod_rewrite does not appear to be installed and is required by ProcessWire."); 
 		} else {
-			$this->err("Unable to determine installed Apache modules. Please ensure you are running Apache, as it is currently required in order to run ProcessWire."); 
+			// apache_get_modules doesn't work on a cgi installation.
+			// check for environment var set in htaccess file, as submitted by jmarjie. 
+			$mod_rewrite = getenv('HTTP_MOD_REWRITE') == 'On' ? true : false;
+			if($mod_rewrite) {
+				$this->li("Found Apache module (cgi): mod_rewrite");
+			} else {
+				$this->err("Unable to determine if Apache mod_rewrite (required by ProcessWire) is installed. On some servers, we may not be able to detect it until your .htaccess file is place. Please click the 'check again' button at the bottom of this screen, if you haven't already."); 
+			}
 		}
 
 		if(is_writable("./site/assets/")) $this->li("./site/assets/ is writable"); 
