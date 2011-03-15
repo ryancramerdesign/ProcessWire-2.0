@@ -1,7 +1,7 @@
 <?php
 
 /**
- * An Inputfield for handling XHTML "text" form inputs
+ * InputfieldForm: An Inputfield for containing form elements
  *
  */
 class InputfieldForm extends InputfieldWrapper {
@@ -17,8 +17,8 @@ class InputfieldForm extends InputfieldWrapper {
 
 	public function __construct() {
 		parent::__construct();
-		$this->setAttribute('method', 'post'); 
-		$this->setAttribute('action', './'); 
+		$this->attr('method', 'post'); 
+		$this->attr('action', './'); 
 	}
 
 	public function ___render() {
