@@ -135,7 +135,7 @@ class ProcessPageAdd extends Process {
 
 		$nameField = $form->children->get('name'); 	
 		$name = $nameField->value; 
-		if(!$name) {
+		if(!strlen("$name")) {
 			$this->error("Missing required field 'name'"); 
 			return false; 
 		}

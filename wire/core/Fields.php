@@ -107,6 +107,7 @@ class Fields extends WireSaveableItems {
 		'fieldgroup',
 		'fields', 
 		'data',
+		'description',
 		); 
 
 	/**

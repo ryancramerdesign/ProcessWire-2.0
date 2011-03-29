@@ -325,7 +325,7 @@ class Pages extends Wire {
 		if($page instanceof NullPage) $reason = "Pages of type NullPage are not saveable";
 			else if((!$page->parent || $page->parent instanceof NullPage) && $page->id !== 1) $reason = "It has no parent assigned"; 
 			else if(!$page->template) $reason = "It has no template assigned"; 
-			else if(!trim($page->name)) $reason = "It has an empty 'name' field"; 
+			else if(!strlen(trim($page->name))) $reason = "It has an empty 'name' field"; 
 			else if($page->outputFormatting) $reason = "outputFormatting is on - Call \$page->setOutputFormatting(false) to turn it off"; 
 			else if($page->is(Page::statusCorrupted)) $reason = "It was corrupted when you modified a field with outputFormatting - See Page::setOutputFormatting(false)"; 
 			else $saveable = true; 
