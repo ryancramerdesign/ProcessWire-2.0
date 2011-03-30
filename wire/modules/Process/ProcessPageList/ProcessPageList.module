@@ -266,6 +266,7 @@ abstract class ProcessPageListRender extends Wire {
 			$v = $page->get($field); 
 
 			if($subfield && is_object($v)) {
+				if($v instanceof WireArray && count($v)) $v = $v->first();
 				$v = $v->get($subfield);
 			}
 
