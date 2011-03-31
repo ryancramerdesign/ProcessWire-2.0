@@ -232,7 +232,10 @@ class Sanitizer extends Wire {
 			return $this->path($value); 
 		}
 
-		if(!strpos($value, '://')) {
+		if(strpos($value, '://')) {
+			$value = filter_var($value, FILTER_VALIDATE_URL); 
+
+		} else {
 			// URL is missing protocol, or is local/relative
 
 			if($allowRelative) {
