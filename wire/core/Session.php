@@ -228,7 +228,7 @@ class Session extends Wire implements IteratorAggregate {
 		if(isset($_COOKIE[$sessionName . "_challenge"])) setcookie($sessionName . "_challenge", '', time()-42000, '/'); 
 		session_destroy();
 		session_name($sessionName); 
-		session_start(); 
+		session_start();
 		session_regenerate_id();
 		$_SESSION[$this->className()] = array();
 		$this->fuel('users')->setCurrentUserGuest(); 
