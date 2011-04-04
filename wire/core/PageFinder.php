@@ -424,7 +424,11 @@ class PageFinder extends Wire {
 		} else if($field == 'parent') {
 			// convert parent fields like '/about/company/history' to the equivalent ID
 			foreach($valueArray as $k => $v) {
-				if(!ctype_digit("$v")) $valueArray[$k] = (($parent = $this->fuel('pages')->get($v)) ? $parent->id : null); 
+				if(ctype_digit("$v")) continue; 
+				$parent = $this->fuel('pages')->get($v); 
+				if(!$parent instanceof NullPage) $valueArray[$k] = $parent->id; 
+					else $valueArray[$k] = null;
+
 			}
 			$field = 'parent_id';
 		}
