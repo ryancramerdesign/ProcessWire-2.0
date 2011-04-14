@@ -38,9 +38,7 @@ function ProcessWireBootConfig() {
 
 	if(isset($_SERVER['HTTP_HOST'])) {
 		// when serving pages from a web server
-		$docRoot = rtrim($_SERVER['DOCUMENT_ROOT'], '/');
-		if(strpos($rootPath, $docRoot) !== 0) $docRoot = rtrim(realpath($docRoot), '/');
-		$rootURL = substr($rootPath, strlen($docRoot)) . '/';
+		$rootURL = rtrim(dirname($_SERVER['SCRIPT_NAME']), "/\\") . '/';
 	} else {
 		// when included from another app or command line script
 		$rootURL = '/';
