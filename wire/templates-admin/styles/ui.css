@@ -70,7 +70,8 @@
 			padding-right: 0.25em; 
 		}
 
-	.Inputfields li > .ui-widget-content > p {
+	.Inputfields li > .ui-widget-content > p,
+	.Inputfields li > .ui-widget-content > ul.Inputfields {
 		margin-top: 0; 
 	}
 

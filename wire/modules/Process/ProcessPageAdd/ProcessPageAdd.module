@@ -96,7 +96,7 @@ class ProcessPageAdd extends Process {
 			$defaultTemplateId = $this->parent->template->childrenTemplatesID; 
 
 		} else if($this->parent->numChildren > 0) { 
-			$sibling = $this->parent->child('sort=-created, limit=1, status<' . Page::statusUnpublished);
+			$sibling = $this->parent->child('sort=-created, status<' . Page::statusUnpublished);
 			if($sibling && $sibling->id) $defaultTemplateId = $sibling->template->id; 
 		} else {
 			$defaultTemplateId = $this->parent->template->id; 
