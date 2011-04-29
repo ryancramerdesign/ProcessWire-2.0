@@ -8,14 +8,21 @@ works the way you do. Not to mention, ProcessWire's API makes working with
 your content easy and enjoyable. Managing and developing a site in 
 ProcessWire is shockingly simple compared to what you may be used to.
 
+Learn more about ProcessWire at:
+http://processwire.com
+
 
 ABOUT THIS VERSION
 ---------------------------------------------------------------------------
-This version is a developer preview, primarily for testing and introducing
-ProcessWire to other web designers and developers. This version is not 
-intended for production use and there are likely to be some changes before 
-the stable release. Please contact Ryan with any bugs or issues you may
-encounter at http://ryancramer.com/contact/
+This is ProcessWire 2.0 stable. This version is suitable for production
+use. Note that this is also the first version of ProcessWire (1.0 was
+a different code base), so this is still a young project with lots of room
+to grow. Please join us in the ProcessWire forums:
+http://processwire.com/talk/
+
+There is also ProcessWire 2.1 in development if you are interested in 
+helping to test and/or develop the latest version: 
+https://github.com/ryancramerdesign/P21
 
 
 REQUIREMENTS
@@ -69,9 +76,12 @@ want to set it back to false once you've resolved any issues.
 
 HAVE QUESTIONS, NEED HELP, OR FOUND A BUG?
 ------------------------------------------
-Please contact Ryan at: 
-http://www.ryancramer.com/contact/ 
+Get support in the ProcessWire forum:
+http://processwire.com/talk/
+
+You can also contact us at: 
+http://processwire.com/contact/
 
 
-ProcessWire, Copyright 2010 by Ryan Cramer
+ProcessWire 2.0 Copyright 2011 by Ryan Cramer
 

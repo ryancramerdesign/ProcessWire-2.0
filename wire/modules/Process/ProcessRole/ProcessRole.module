@@ -35,7 +35,6 @@ class ProcessRole extends Process {
 		$this->fuel->breadcrumbs->add(new Breadcrumb('list', 'Roles')); 
 		$this->setFuel('processHeadline', 'Roles'); 
 		$this->guestRole = $this->roles->get(Role::guestRoleID); 
-		$this->message("ProcessWire's role based access control system is currently in development. While fully functional, more work, testing and documentation is in progress, so I recommend sticking with the Superuser role for administrative accounts until development is complete."); 
 	}
 
 	public function ___execute() {
