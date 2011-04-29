@@ -74,6 +74,7 @@ class ProcessLogin extends Process {
 	public function ___execute() {
 
 		if($this->user->isLoggedin()) {
+			if($this->input->get->login) $this->afterLoginRedirect();
 			$this->message("You are already logged in"); 
 			return '';
 		}
@@ -101,13 +102,24 @@ class ProcessLogin extends Process {
 	 *
 	 */
 	protected function render() {
-		if(isset($_GET['login'])) {
-			$this->session->redirect("../"); 
+		if($this->input->get->login) {
+			$this->afterLoginRedirect();
 		} else {
 			$this->setFuel('processHeadline', 'Login'); 
 			return $this->form->render();
 		}
 	}
+
+	/**
+	 * Redirect to admin root after login
+	 *
+	 * Called only if the login request originated on the actual login page. 
+	 *
+	 */
+	protected function ___afterLoginRedirect() {
+		$this->session->redirect($this->pages->get($this->config->adminRootPageID)->url);
+	}
+
 
 }
 
