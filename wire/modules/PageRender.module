@@ -113,11 +113,19 @@ class PageRender extends WireData implements Module, ConfigurableModule {
 	 */
 	public function ___renderPage($event) {
 
+		$_page = $this->fuel('page'); 
 		$page = $event->object; 
+
+		// if page is being rendered within a page, set the new system context to be the one being rendered.
+		// we must also restore the context before existing this method. 
+		if($_page->id != $page->id) $this->setFuel('page', $page); 
+
 		$options = count($event->arguments) ? $event->arguments[0] : array();
 
-		if($page->status >= Page::statusUnpublished) 
+		if($page->status >= Page::statusUnpublished) {
+			$this->setFuel('page', $_page); 
 			throw new WireException("Page {$page->url} may not be rendered because it is unpublished");
+		}
 
 		$defaultOptions = array(
 			'forceBuildCache' => false,
@@ -131,20 +139,25 @@ class PageRender extends WireData implements Module, ConfigurableModule {
 			$cacheFile = $this->getCacheFile($page);
 			if(!$options['forceBuildCache'] && ($data = $cacheFile->get()) !== false) {
 				$event->return = $data;
+				$this->setFuel('page', $_page); 
 				return;
 			}
 		}
 
-		if(!$page->outputFormatting) throw new WireException(
-			"Page {$page->url} may not be rendered because outputFormatting is set to false. " . 
-			"Call \$page->setOutputFormatting(true) before rendering the page."
-			);
+		if(!$page->outputFormatting) {
+			$this->setFuel('page', $_page); 
+			throw new WireException(
+				"Page {$page->url} may not be rendered because outputFormatting is set to false. " . 
+				"Call \$page->setOutputFormatting(true) before rendering the page."
+				);
+		}
 
 		$output = $page->output;
 		$data = $output->render();
 
 		if($cacheTime && $cacheFile) $cacheFile->save($data);
 		$event->return = $data; 
+		$this->setFuel('page', $_page);
 	}
 
 	/**
