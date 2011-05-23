@@ -409,7 +409,7 @@ class Pages extends Wire {
 		// and call upon $this->saveParents where appropriate. 
 
 		if($isNew && $page->parent_id) $page = $page->parent; // new page, lets focus on it's parent
-		if($page->numChildren) {
+		if($page->numChildren || $isNew) {
 			// check if entries aren't already present perhaps due to outside manipulation or an older version
 			$result = $this->db->query("SELECT COUNT(*) FROM pages_parents WHERE parents_id={$page->id}"); 
 			list($n) = $result->fetch_array();

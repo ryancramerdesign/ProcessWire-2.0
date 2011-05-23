@@ -92,14 +92,13 @@ class ProcessPageAdd extends Process {
 		$field->attr('value', $this->parent_id); 
 		$form->append($field); 
 
+		$defaultTemplateId = $this->parent->template->id; 
 		if($this->parent->template->childrenTemplatesID > 0) {
 			$defaultTemplateId = $this->parent->template->childrenTemplatesID; 
 
 		} else if($this->parent->numChildren > 0) { 
 			$sibling = $this->parent->child('sort=-created, status<' . Page::statusUnpublished);
 			if($sibling && $sibling->id) $defaultTemplateId = $sibling->template->id; 
-		} else {
-			$defaultTemplateId = $this->parent->template->id; 
 		}
 
 		$field = $this->modules->get('InputfieldSelect');
