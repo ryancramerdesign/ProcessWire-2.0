@@ -101,7 +101,7 @@ var $iframe;
 
 							"Insert This Image": function() {
 
-								function insertImage(url) {
+								function insertImage() {
 									var $i = $iframe.contents();
 									var $img = $("#selected_image", $i); 
 									var width = $img.attr('width');
@@ -109,7 +109,8 @@ var $iframe;
 									var alt = $("#selected_image_description", $i).val();
 									var cls = $img.removeClass('ui-resizable').attr('class'); 
 									var link = $("#selected_image_link:checked", $i).val();
-									var html = '<img class="' + cls + '" src="' + url + '" mce_src="' + url + '" '; 
+									var src = $img.attr('src'); 
+									var html = '<img class="' + cls + '" src="' + src + '" mce_src="' + src + '" '; 
 
 									if(alt && alt.length > 0) alt = $("<div />").text(alt).html().replace(/"/g, '&quot;'); 
 
@@ -137,9 +138,8 @@ var $iframe;
 
 								$.get(modalUri + 'resize?id=' + page_id + '&file=' + file + '&width=' + width + '&height=' + height, function(data) {
 									var $div = $("<div></div>").html(data); 
-									var $img = $div.find("#selected_image"); 
-									var url = $img.attr('src'); 	
-									insertImage(url); 
+									// var $img = $div.find("#selected_image"); 
+									insertImage(); 
 								}); 
 
 							},
